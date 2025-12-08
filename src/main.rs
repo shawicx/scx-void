@@ -37,7 +37,10 @@ async fn main() {
             cli::ProjectCommands::run(command).await;
         }
         Commands::System { command } => {
-            cli::SystemCommands::run(command).await;
+            if let Err(e) = cli::SystemCommands::run(command).await {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
         }
     }
 }
