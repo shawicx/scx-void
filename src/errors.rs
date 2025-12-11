@@ -6,6 +6,8 @@ pub enum ScxVoidError {
     FileSystemError(String),
     TemplateNotFound(String),
     UnsupportedProjectType(usize),
+    ClaudeRuleFileExists(std::path::PathBuf),
+    InvalidTemplateType(String),
 }
 
 impl std::fmt::Display for ScxVoidError {
@@ -20,6 +22,12 @@ impl std::fmt::Display for ScxVoidError {
             ScxVoidError::TemplateNotFound(name) => write!(f, "Template not found: {}", name),
             ScxVoidError::UnsupportedProjectType(index) => {
                 write!(f, "Unsupported project type index: {}", index)
+            }
+            ScxVoidError::ClaudeRuleFileExists(path) => {
+                write!(f, "Claude rule file already exists: {:?}. Use --force to overwrite.", path)
+            }
+            ScxVoidError::InvalidTemplateType(template) => {
+                write!(f, "Invalid template type: {}. Available: basic, advanced", template)
             }
         }
     }

@@ -38,6 +38,12 @@ pub fn copy_dir_all(src: &str, dst: &str) -> std::io::Result<()> {
     Ok(())
 }
 
+/// 复制单个文件
+pub fn copy_file(src: &str, dst: &str) -> std::io::Result<()> {
+    fs::copy(src, dst)?;
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

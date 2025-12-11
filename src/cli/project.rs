@@ -3,12 +3,26 @@ use dialoguer::{Input, Select};
 
 #[derive(Subcommand, Debug)]
 pub enum ProjectCommands {
-        /// 初始化一个新项目
+    /// 初始化一个新项目
     Init,
     /// 向项目添加特定技术栈
     Add {
         #[arg(help = "要添加的技术栈类型")]
         stack_type: String,
+    },
+    /// 生成或更新 .claude-code-rule.md 文件
+    ClaudeRule {
+        /// 模板类型 (basic, advanced)
+        #[arg(short, long, default_value = "advanced")]
+        template: String,
+
+        /// 强制覆盖现有文件
+        #[arg(short, long)]
+        force: bool,
+
+        /// 交互式配置
+        #[arg(short, long)]
+        interactive: bool,
     },
 }
 
@@ -20,6 +34,9 @@ impl ProjectCommands {
             }
             ProjectCommands::Add { stack_type } => {
                 add_to_project(stack_type).await;
+            }
+            ProjectCommands::ClaudeRule { template, force, interactive } => {
+                manage_claude_rule(template, force, interactive).await;
             }
         }
     }
@@ -63,4 +80,28 @@ async fn add_to_project(stack_type: String) {
     println!("正在向项目添加{}...", stack_type);
     // 添加技术栈到现有项目的实现
     println!("添加{}功能尚未实现。", stack_type);
+}
+
+async fn manage_claude_rule(template: String, force: bool, interactive: bool) {
+    println!("正在管理 Claude Code 规则文件...");
+
+    // 交互式配置选项
+    let final_template = if interactive {
+        let templates = ["advanced", "basic"];
+        let selection = Select::new()
+            .with_prompt("选择模板类型")
+            .items(&templates)
+            .default(0)
+            .interact()
+            .unwrap();
+        templates[selection].to_string()
+    } else {
+        template
+    };
+
+    // 委托服务层处理Claude规则文件
+    match crate::services::project::claude_rule::manage_claude_rule_file(&final_template, force).await {
+        Ok(_) => println!("Claude Code 规则文件处理成功!"),
+        Err(e) => eprintln!("处理 Claude Code 规则文件时出错: {}", e),
+    }
 }
