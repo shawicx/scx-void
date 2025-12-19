@@ -4,6 +4,7 @@ mod cli;
 mod services;
 mod utils;
 mod errors;
+mod platform;
 
 #[derive(Parser)]
 #[command(name = "scx-void")]
@@ -26,6 +27,11 @@ enum Commands {
         #[command(subcommand)]
         command: cli::SystemCommands,
     },
+    /// 音频转录相关命令
+    Audio {
+        #[command(subcommand)]
+        command: cli::AudioSubCommands,
+    },
 }
 
 #[tokio::main]
@@ -38,6 +44,13 @@ async fn main() {
         }
         Commands::System { command } => {
             if let Err(e) = cli::SystemCommands::run(command).await {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Audio { command } => {
+            let audio_command = cli::AudioCommands { command };
+            if let Err(e) = audio_command.run().await {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
