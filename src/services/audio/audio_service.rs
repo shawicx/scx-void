@@ -16,6 +16,7 @@ impl AudioService {
         })
     }
 
+    #[allow(dead_code)]
     pub async fn transcribe_file(
         &mut self,
         file_path: PathBuf,
@@ -110,6 +111,7 @@ impl AudioService {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn transcribe_with_timestamps(
         &mut self,
         file_path: PathBuf,
@@ -188,6 +190,7 @@ impl AudioService {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn transcribe_file_with_filter(
         &mut self,
         file_path: PathBuf,
@@ -292,6 +295,7 @@ impl AudioService {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub async fn transcribe_with_timestamps_and_filter(
         &mut self,
         file_path: PathBuf,

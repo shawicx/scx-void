@@ -1,4 +1,4 @@
-use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters, WhisperError};
+use whisper_rs::{FullParams, SamplingStrategy, WhisperContext, WhisperContextParameters};
 
 pub struct WhisperTranscriber {
     context: WhisperContext,
@@ -13,6 +13,7 @@ impl WhisperTranscriber {
         Ok(Self { context })
     }
 
+    #[allow(dead_code)]
     pub fn transcribe(&mut self, pcm_data: &[i16], language: Option<&str>) -> Result<Vec<TranscriptionSegment>, String> {
         self.transcribe_with_params(pcm_data, language, 0.3, 5, 0.6)
     }
@@ -87,6 +88,7 @@ impl WhisperTranscriber {
         Ok(segments)
     }
 
+    #[allow(dead_code)]
     pub fn transcribe_to_text(&mut self, pcm_data: &[i16], language: Option<&str>) -> Result<String, String> {
         self.transcribe_to_text_with_params(pcm_data, language, 0.3, 5, 0.6)
     }
@@ -106,6 +108,7 @@ pub struct TranscriptionSegment {
 }
 
 impl TranscriptionSegment {
+    #[allow(dead_code)]
     pub fn duration_ms(&self) -> u32 {
         self.end_ms - self.start_ms
     }

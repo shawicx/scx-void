@@ -1,6 +1,5 @@
 use std::fs::{self, File};
 use std::io::Write;
-use std::path::Path;
 
 /// 在指定路径创建目录
 pub fn create_dir(path: &str) -> std::io::Result<()> {

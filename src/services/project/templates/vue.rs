@@ -1,4 +1,6 @@
+#[allow(dead_code)]
 pub struct VueTemplate;
+#[allow(dead_code)]
 
 impl VueTemplate {
     pub fn run() {

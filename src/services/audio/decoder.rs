@@ -7,6 +7,7 @@ use symphonia::core::probe::Hint;
 
 pub struct AudioDecoder {
     sample_rate: u32,
+    #[allow(dead_code)]
     channels: u32,
 }
 

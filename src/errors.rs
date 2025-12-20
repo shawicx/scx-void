@@ -1,4 +1,5 @@
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum ScxVoidError {
     GeneralError(String),
     InvalidProjectName(String),
