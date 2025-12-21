@@ -1,6 +1,6 @@
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use crate::services::AudioService;
+use crate::services::audio::audio_service::AudioService;
 use crate::errors::ScxVoidError;
 
 #[derive(Parser, Debug)]

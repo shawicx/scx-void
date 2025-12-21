@@ -1,6 +1,8 @@
 pub mod windows;
 pub mod macos;
 
+use macos::MacosPlatform;
+
 #[allow(dead_code)]
 pub trait SystemOps {
     fn shutdown_in(&self, seconds: u64) -> duct::Expression;

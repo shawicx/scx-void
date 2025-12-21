@@ -296,6 +296,7 @@ impl AudioService {
     }
 
     #[allow(dead_code)]
+    #[allow(dead_code)]
     pub async fn transcribe_with_timestamps_and_filter(
         &mut self,
         file_path: PathBuf,
