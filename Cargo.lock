@@ -1323,8 +1323,11 @@ dependencies = [
  "predicates",
  "reqwest",
  "symphonia",
+ "tempfile",
+ "thiserror",
  "tokio",
  "tokio-util",
+ "url",
  "whisper-rs",
 ]
 

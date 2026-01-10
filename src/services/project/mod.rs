@@ -1,3 +1,4 @@
+pub mod git;
 pub mod installers;
 pub mod templates;
 pub mod generator;

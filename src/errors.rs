@@ -17,6 +17,18 @@ pub enum ScxVoidError {
     TranscriptionError(String),
     ModelDownloadError(String),
     NetworkError(String),
+    /// Git 克隆失败
+    GitCloneError(String),
+    /// 无效的 Git URL
+    InvalidGitUrl(String),
+    /// Git 分支不存在
+    GitBranchNotFound(String),
+    /// 模板下载失败
+    TemplateDownloadFailed(String),
+    /// Git 模板 ID 不存在
+    GitTemplateNotFound(String),
+    /// Git 命令未找到
+    GitNotInstalled,
 }
 
 impl std::fmt::Display for ScxVoidError {
@@ -61,6 +73,24 @@ impl std::fmt::Display for ScxVoidError {
             }
             ScxVoidError::NetworkError(msg) => {
                 write!(f, "Network error: {}", msg)
+            }
+            ScxVoidError::GitCloneError(msg) => {
+                write!(f, "Git 克隆失败: {}", msg)
+            }
+            ScxVoidError::InvalidGitUrl(url) => {
+                write!(f, "无效的 Git URL: {}", url)
+            }
+            ScxVoidError::GitBranchNotFound(branch) => {
+                write!(f, "Git 分支不存在: {}", branch)
+            }
+            ScxVoidError::TemplateDownloadFailed(msg) => {
+                write!(f, "模板下载失败: {}", msg)
+            }
+            ScxVoidError::GitTemplateNotFound(id) => {
+                write!(f, "Git 模板 '{0}' 不存在", id)
+            }
+            ScxVoidError::GitNotInstalled => {
+                write!(f, "系统未安装 Git 命令")
             }
         }
     }
