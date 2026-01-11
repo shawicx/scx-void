@@ -1,8 +1,13 @@
 use assert_cmd::Command;
 
+#[allow(deprecated)]
+fn create_cmd() -> Command {
+    Command::cargo_bin("scx-void").unwrap()
+}
+
 #[test]
 fn test_audio_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("scx-void")?;
+    let mut cmd = create_cmd();
     let assert = cmd.arg("audio").arg("--help").assert();
     assert
         .success()
@@ -12,7 +17,7 @@ fn test_audio_help() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn test_audio_list_models() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("scx-void")?;
+    let mut cmd = create_cmd();
     let assert = cmd.arg("audio").arg("list-models").assert();
     assert
         .success()
@@ -27,7 +32,7 @@ fn test_audio_list_models() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn test_transcribe_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("scx-void")?;
+    let mut cmd = create_cmd();
     let assert = cmd.arg("audio").arg("transcribe").arg("--help").assert();
     assert
         .success()
@@ -39,7 +44,7 @@ fn test_transcribe_help() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn test_transcribe_with_timestamps_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("scx-void")?;
+    let mut cmd = create_cmd();
     let assert = cmd
         .arg("audio")
         .arg("transcribe-with-timestamps")
@@ -53,7 +58,7 @@ fn test_transcribe_with_timestamps_help() -> Result<(), Box<dyn std::error::Erro
 
 #[test]
 fn test_download_model_help() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("scx-void")?;
+    let mut cmd = create_cmd();
     let assert = cmd
         .arg("audio")
         .arg("download-model")
@@ -68,7 +73,7 @@ fn test_download_model_help() -> Result<(), Box<dyn std::error::Error>> {
 
 #[test]
 fn test_download_model_invalid_size() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("scx-void")?;
+    let mut cmd = create_cmd();
     let assert = cmd
         .arg("audio")
         .arg("download-model")
@@ -82,7 +87,7 @@ fn test_download_model_invalid_size() -> Result<(), Box<dyn std::error::Error>> 
 
 #[test]
 fn test_transcribe_missing_file() -> Result<(), Box<dyn std::error::Error>> {
-    let mut cmd = Command::cargo_bin("scx-void")?;
+    let mut cmd = create_cmd();
     let assert = cmd
         .arg("audio")
         .arg("transcribe")
@@ -100,7 +105,7 @@ fn test_transcribe_missing_model() -> Result<(), Box<dyn std::error::Error>> {
     let temp_file = "test_temp.m4a";
     std::fs::write(temp_file, "fake audio content")?;
 
-    let mut cmd = Command::cargo_bin("scx-void")?;
+    let mut cmd = create_cmd();
     let assert = cmd.arg("audio").arg("transcribe").arg(temp_file).assert();
     assert
         .failure()

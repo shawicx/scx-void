@@ -1,4 +1,6 @@
 use crate::errors::ScxVoidError;
+use crate::services::project::git::downloader;
+use crate::services::project::git::types::GitTemplate;
 use crate::utils::fs;
 use std::path::Path;
 
@@ -141,10 +143,23 @@ async fn create_nextjs_files(project_name: &str) -> Result<(), ScxVoidError> {
     Ok(())
 }
 
+/// 从 Git 模板生成项目
+pub async fn generate_from_git_template(
+    project_name: &str,
+    template: &GitTemplate,
+    branch: Option<&str>,
+) -> Result<(), ScxVoidError> {
+    println!("正在从 Git 模板生成项目: {}", template.display_name);
+
+    let temp_dir = downloader::download_template_to_temp(template, branch).await?;
+
+    downloader::extract_template_files(&temp_dir, template, project_name)?;
+
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[tokio::test]
     async fn test_generate_from_template() {
         // This would test the template generation with a temporary directory

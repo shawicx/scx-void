@@ -1,13 +1,9 @@
 use crate::errors::ScxVoidError;
 use duct::cmd;
-use std::process::Output;
 
 /// 检查系统是否安装了 Git
 pub fn is_git_installed() -> bool {
-    match cmd!("git", "--version").run() {
-        Ok(_) => true,
-        Err(_) => false,
-    }
+    cmd!("git", "--version").run().is_ok()
 }
 
 /// 验证 Git URL 格式
@@ -41,6 +37,7 @@ pub fn validate_git_url(url: &str) -> bool {
 }
 
 /// 获取 Git 仓库的默认分支
+#[allow(dead_code)]
 pub fn get_default_branch(repository_url: &str) -> Result<String, ScxVoidError> {
     let output = cmd!("git", "remote", "show", repository_url)
         .read()
@@ -62,6 +59,7 @@ pub fn get_default_branch(repository_url: &str) -> Result<String, ScxVoidError> 
 }
 
 /// 检查 Git 仓库的分支是否存在
+#[allow(dead_code)]
 pub fn branch_exists(repository_url: &str, branch: &str) -> Result<bool, ScxVoidError> {
     let output = cmd!("git", "ls-remote", "--heads", repository_url, branch)
         .read()
@@ -72,6 +70,7 @@ pub fn branch_exists(repository_url: &str, branch: &str) -> Result<bool, ScxVoid
 }
 
 /// 获取 Git 仓库的所有分支
+#[allow(dead_code)]
 pub fn list_branches(repository_url: &str) -> Result<Vec<String>, ScxVoidError> {
     let output = cmd!("git", "ls-remote", "--heads", repository_url)
         .read()

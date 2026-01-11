@@ -49,11 +49,13 @@ pub fn get_template_by_id(id: &str) -> Option<GitTemplate> {
 }
 
 /// 检查模板 ID 是否存在
+#[allow(dead_code)]
 pub fn template_exists(id: &str) -> bool {
     get_template_by_id(id).is_some()
 }
 
 /// 获取模板 ID 到模板的映射
+#[allow(dead_code)]
 pub fn get_template_map() -> HashMap<String, GitTemplate> {
     let templates = get_all_templates();
     templates.into_iter().map(|t| (t.id.clone(), t)).collect()

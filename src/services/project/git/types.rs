@@ -14,6 +14,7 @@ pub enum ProjectType {
 
 impl ProjectType {
     /// 获取项目类型的显示名称
+    #[allow(dead_code)]
     pub fn display_name(&self) -> String {
         match self {
             ProjectType::NodeTsCli => "Node TypeScript CLI".to_string(),
@@ -25,6 +26,7 @@ impl ProjectType {
     }
 
     /// 获取项目类型的唯一标识符
+    #[allow(dead_code)]
     pub fn identifier(&self) -> String {
         match self {
             ProjectType::NodeTsCli => "node-ts-cli".to_string(),
@@ -46,6 +48,7 @@ pub struct GitTemplate {
     pub display_name: String,
 
     /// 模板描述
+    #[allow(dead_code)]
     pub description: String,
 
     /// Git 仓库 URL
@@ -58,9 +61,11 @@ pub struct GitTemplate {
     pub template_path: String,
 
     /// 项目类型
+    #[allow(dead_code)]
     pub project_type: ProjectType,
 
     /// 是否为用户自定义模板
+    #[allow(dead_code)]
     pub is_custom: bool,
 }
 
@@ -106,8 +111,10 @@ pub struct CloneOptions {
     pub repository_url: String,
     pub branch: Option<String>,
     pub target_dir: String,
-    pub depth: Option<u32>,    // 浅克隆深度，提高速度
-    pub sparse_checkout: bool, // 是否使用稀疏检出
+    pub depth: Option<u32>,
+    /// 是否使用稀疏检出
+    #[allow(dead_code)]
+    pub sparse_checkout: bool,
 }
 
 impl CloneOptions {
@@ -131,6 +138,7 @@ impl CloneOptions {
         self
     }
 
+    #[allow(dead_code)]
     pub fn with_sparse_checkout(mut self, sparse: bool) -> Self {
         self.sparse_checkout = sparse;
         self
@@ -140,8 +148,11 @@ impl CloneOptions {
 /// 模板源枚举
 #[derive(Debug, Clone)]
 pub enum TemplateSource {
-    Local(String),    // 本地模板名称
-    Git(GitTemplate), // Git 模板配置
+    /// 本地模板名称
+    #[allow(dead_code)]
+    Local(String),
+    /// Git 模板配置
+    Git(GitTemplate),
 }
 
 #[cfg(test)]

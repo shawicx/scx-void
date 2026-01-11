@@ -1,5 +1,7 @@
 use crate::errors::ScxVoidError;
 use crate::services::project::generator;
+use crate::services::project::git::types::{GitTemplate, TemplateSource};
+use crate::services::project::git::validator;
 use crate::utils::fs;
 use std::path::Path;
 
@@ -85,10 +87,46 @@ async fn create_nextjs_project(project_name: &str) -> Result<(), ScxVoidError> {
     Ok(())
 }
 
+/// 从 Git 模板创建项目
+pub async fn create_project_from_git(
+    project_name: &str,
+    template: &GitTemplate,
+    branch: Option<&str>,
+) -> Result<(), ScxVoidError> {
+    validator::validate_git_template(template)?;
+
+    generator::generate_from_git_template(project_name, template, branch).await?;
+
+    Ok(())
+}
+
+/// 创建项目的统一入口函数
+pub async fn create_project_with_source(
+    project_name: &str,
+    source: TemplateSource,
+) -> Result<(), ScxVoidError> {
+    match source {
+        TemplateSource::Local(template_id) => {
+            let project_type_index = match template_id.as_str() {
+                "node_ts" => 0,
+                "react" => 1,
+                "vue" => 2,
+                "nestjs" => 3,
+                "nextjs" => 4,
+                _ => {
+                    return Err(ScxVoidError::UnsupportedProjectType(999));
+                }
+            };
+            create_project(project_name, project_type_index).await
+        }
+        TemplateSource::Git(template) => {
+            create_project_from_git(project_name, &template, None).await
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     #[tokio::test]
     async fn test_create_project_with_valid_name() {
         // This would test the project creation with a temporary directory

@@ -55,6 +55,7 @@ pub fn is_valid_branch_name(branch: &str) -> bool {
 }
 
 /// 验证模板 ID 是否存在
+#[allow(dead_code)]
 pub fn validate_template_id(template_id: &str) -> Result<(), ScxVoidError> {
     if !registry::template_exists(template_id) {
         return Err(ScxVoidError::GitTemplateNotFound(template_id.to_string()));
@@ -63,6 +64,7 @@ pub fn validate_template_id(template_id: &str) -> Result<(), ScxVoidError> {
 }
 
 /// 验证模板路径
+#[allow(dead_code)]
 pub fn validate_template_path(path: &str) -> Result<(), ScxVoidError> {
     if path.is_empty() {
         return Ok(()); // 空路径表示根目录，是有效的
@@ -91,6 +93,7 @@ pub fn validate_template_path(path: &str) -> Result<(), ScxVoidError> {
 }
 
 /// 验证克隆选项
+#[allow(dead_code)]
 pub fn validate_clone_options(
     repository_url: &str,
     branch: Option<&str>,
@@ -124,6 +127,7 @@ pub fn validate_clone_options(
 }
 
 /// 检查 Git 是否安装
+#[allow(dead_code)]
 pub fn check_git_installed() -> Result<(), ScxVoidError> {
     if !git::is_git_installed() {
         return Err(ScxVoidError::GitNotInstalled);
