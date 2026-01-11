@@ -1,3 +1,22 @@
+<!-- OPENSPEC:START -->
+# OpenSpec Instructions
+
+本指南适用于参与本项目的AI助手。
+
+当请求包含以下情况时，请务必打开`@/openspec/AGENTS.md`：
+- 提及规划或提案（如提案、规范、变更、计划等词汇）
+- 涉及新增功能、破坏性变更、架构调整或重大性能/安全工作
+- 内容存在歧义且编码前需参考权威规范
+
+通过`@/openspec/AGENTS.md`学习：
+- 变更提案的创建与实施流程
+- 规范格式与编写规范
+- 项目结构与指导原则
+
+请保留此管理块以便通过'openspec update'刷新说明内容。
+
+<!-- OPENSPEC:END -->
+
 # AGENTS.md
 
 本文件为在此 Rust 项目中工作的 AI 代理提供指导。

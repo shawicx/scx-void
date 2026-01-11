@@ -1,4 +1,4 @@
-pub mod claude_rule;
+pub mod ai_rule;
 pub mod generator;
 pub mod git;
 pub mod installers;

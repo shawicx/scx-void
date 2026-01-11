@@ -7,7 +7,7 @@ pub enum ScxVoidError {
     FileSystemError(String),
     TemplateNotFound(String),
     UnsupportedProjectType(usize),
-    ClaudeRuleFileExists(std::path::PathBuf),
+    AiRuleFileExists(std::path::PathBuf),
     InvalidTemplateType(String),
     AudioFileNotFound(String),
     UnsupportedAudioFormat(String),
@@ -44,10 +44,10 @@ impl std::fmt::Display for ScxVoidError {
             ScxVoidError::UnsupportedProjectType(index) => {
                 write!(f, "Unsupported project type index: {}", index)
             }
-            ScxVoidError::ClaudeRuleFileExists(path) => {
+            ScxVoidError::AiRuleFileExists(path) => {
                 write!(
                     f,
-                    "Claude rule file already exists: {:?}. Use --force to overwrite.",
+                    "Ai rule file already exists: {:?}. Use --force to overwrite.",
                     path
                 )
             }

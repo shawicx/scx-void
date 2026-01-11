@@ -10,8 +10,8 @@ pub enum ProjectCommands {
         #[arg(help = "要添加的技术栈类型")]
         stack_type: String,
     },
-    /// 生成或更新 AI-RULES.md 文件
-    ClaudeRule {
+    /// 生成或更新 AGENTS.md 文件
+    AiRule {
         /// 模板类型 (basic, advanced)
         #[arg(short, long, default_value = "advanced")]
         template: String,
@@ -35,12 +35,12 @@ impl ProjectCommands {
             ProjectCommands::Add { stack_type } => {
                 add_to_project(stack_type).await;
             }
-            ProjectCommands::ClaudeRule {
+            ProjectCommands::AiRule {
                 template,
                 force,
                 interactive,
             } => {
-                manage_claude_rule(template, force, interactive).await;
+                manage_ai_rule(template, force, interactive).await;
             }
         }
     }
@@ -77,8 +77,8 @@ async fn add_to_project(stack_type: String) {
     println!("添加{}功能尚未实现。", stack_type);
 }
 
-async fn manage_claude_rule(template: String, force: bool, interactive: bool) {
-    println!("正在管理 Claude Code 规则文件...");
+async fn manage_ai_rule(template: String, force: bool, interactive: bool) {
+    println!("正在管理 Ai Code 规则文件...");
 
     // 交互式配置选项
     let final_template = if interactive {
@@ -94,13 +94,13 @@ async fn manage_claude_rule(template: String, force: bool, interactive: bool) {
         template
     };
 
-    // 委托服务层处理Claude规则文件
-    match crate::services::project::claude_rule::manage_claude_rule_file(&final_template, force)
+    // 委托服务层处理Ai规则文件
+    match crate::services::project::ai_rule::manage_ai_rule_file(&final_template, force)
         .await
     {
-        Ok(_) => println!("Claude Code 规则文件处理成功!"),
+        Ok(_) => println!("Ai Code 规则文件处理成功!"),
         Err(e) => {
-            eprintln!("处理 Claude Code 规则文件时出错: {}", e);
+            eprintln!("处理 Ai Code 规则文件时出错: {}", e);
             std::process::exit(1);
         }
     }

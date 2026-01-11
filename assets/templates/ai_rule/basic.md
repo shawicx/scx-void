@@ -1,4 +1,4 @@
-# 🤖 **AI Code Agent - Basic Project Rules**
+# **AI Code Agent - Basic Project Rules**
 
 以下是适用于此项目的基本规则和指导原则。
 
