@@ -21,8 +21,7 @@ impl AudioDecoder {
 
     pub fn decode_to_pcm(&self, file_path: &Path) -> Result<Vec<i16>, String> {
         // 打开音频文件
-        let file = std::fs::File::open(file_path)
-            .map_err(|e| format!("无法打开文件: {}", e))?;
+        let file = std::fs::File::open(file_path).map_err(|e| format!("无法打开文件: {}", e))?;
 
         let mss = MediaSourceStream::new(Box::new(file), Default::default());
 
@@ -47,7 +46,8 @@ impl AudioDecoder {
         // 找到第一个音频轨道
         let (track_id, codec_params) = {
             let tracks = format.tracks();
-            let track = tracks.iter()
+            let track = tracks
+                .iter()
                 .find(|t| t.codec_params.codec != symphonia::core::codecs::CODEC_TYPE_NULL)
                 .ok_or("未找到音频轨道")?;
             (track.id, track.codec_params.clone())
@@ -68,7 +68,10 @@ impl AudioDecoder {
                 Ok(packet) => packet,
                 Err(SymphoniaError::ResetRequired) => break,
                 Err(SymphoniaError::IoError(ref err))
-                    if err.kind() == std::io::ErrorKind::UnexpectedEof => break,
+                    if err.kind() == std::io::ErrorKind::UnexpectedEof =>
+                {
+                    break
+                }
                 Err(err) => return Err(format!("解码错误: {}", err)),
             };
 
@@ -85,7 +88,8 @@ impl AudioDecoder {
                                 let samples: &[f32] = plane;
                                 for &sample in samples {
                                     // 转换为 16-bit PCM
-                                    let sample_i16 = (sample.clamp(-1.0, 1.0) * i16::MAX as f32) as i16;
+                                    let sample_i16 =
+                                        (sample.clamp(-1.0, 1.0) * i16::MAX as f32) as i16;
                                     pcm_data.push(sample_i16);
                                 }
                             }

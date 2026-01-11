@@ -1,6 +1,6 @@
 use crate::errors::ScxVoidError;
-use crate::services::project::git::types::GitTemplate;
 use crate::services::project::git::registry;
+use crate::services::project::git::types::GitTemplate;
 use crate::utils::git;
 
 /// 验证 Git 模板配置
@@ -12,7 +12,9 @@ pub fn validate_git_template(template: &GitTemplate) -> Result<(), ScxVoidError>
 
     // 验证分支名（如果不为空）
     if !template.default_branch.is_empty() && !is_valid_branch_name(&template.default_branch) {
-        return Err(ScxVoidError::GitBranchNotFound(template.default_branch.clone()));
+        return Err(ScxVoidError::GitBranchNotFound(
+            template.default_branch.clone(),
+        ));
     }
 
     Ok(())
@@ -109,9 +111,7 @@ pub fn validate_clone_options(
     // 验证深度
     if let Some(d) = depth {
         if d == 0 {
-            return Err(ScxVoidError::GeneralError(
-                "克隆深度必须大于 0".to_string(),
-            ));
+            return Err(ScxVoidError::GeneralError("克隆深度必须大于 0".to_string()));
         }
         if d > 1000 {
             return Err(ScxVoidError::GeneralError(
@@ -162,10 +162,16 @@ mod tests {
     #[test]
     fn test_validate_clone_options() {
         assert!(validate_clone_options("https://github.com/user/repo.git", None, None).is_ok());
-        assert!(validate_clone_options("https://github.com/user/repo.git", Some("main"), Some(1)).is_ok());
+        assert!(
+            validate_clone_options("https://github.com/user/repo.git", Some("main"), Some(1))
+                .is_ok()
+        );
 
         assert!(validate_clone_options("invalid-url", None, None).is_err());
-        assert!(validate_clone_options("https://github.com/user/repo.git", Some("-invalid"), None).is_err());
+        assert!(
+            validate_clone_options("https://github.com/user/repo.git", Some("-invalid"), None)
+                .is_err()
+        );
         assert!(validate_clone_options("https://github.com/user/repo.git", None, Some(0)).is_err());
     }
 }

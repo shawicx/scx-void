@@ -10,7 +10,7 @@ pub enum ProjectCommands {
         #[arg(help = "要添加的技术栈类型")]
         stack_type: String,
     },
-    /// 生成或更新 .claude-code-rule.md 文件
+    /// 生成或更新 AI-RULES.md 文件
     ClaudeRule {
         /// 模板类型 (basic, advanced)
         #[arg(short, long, default_value = "advanced")]
@@ -35,7 +35,11 @@ impl ProjectCommands {
             ProjectCommands::Add { stack_type } => {
                 add_to_project(stack_type).await;
             }
-            ProjectCommands::ClaudeRule { template, force, interactive } => {
+            ProjectCommands::ClaudeRule {
+                template,
+                force,
+                interactive,
+            } => {
                 manage_claude_rule(template, force, interactive).await;
             }
         }
@@ -46,19 +50,10 @@ async fn init_project() {
     println!("正在初始化一个新项目...");
 
     // 从用户获取项目名称
-    let project_name: String = Input::new()
-        .with_prompt("输入项目名称")
-        .interact()
-        .unwrap();
+    let project_name: String = Input::new().with_prompt("输入项目名称").interact().unwrap();
 
     // 从用户获取项目类型
-    let project_types = [
-        "Node TypeScript",
-        "React",
-        "Vue",
-        "NestJS",
-        "NextJS",
-    ];
+    let project_types = ["Node TypeScript", "React", "Vue", "NestJS", "NextJS"];
 
     let selection = Select::new()
         .with_prompt("选择项目类型")
@@ -100,8 +95,13 @@ async fn manage_claude_rule(template: String, force: bool, interactive: bool) {
     };
 
     // 委托服务层处理Claude规则文件
-    match crate::services::project::claude_rule::manage_claude_rule_file(&final_template, force).await {
+    match crate::services::project::claude_rule::manage_claude_rule_file(&final_template, force)
+        .await
+    {
         Ok(_) => println!("Claude Code 规则文件处理成功!"),
-        Err(e) => eprintln!("处理 Claude Code 规则文件时出错: {}", e),
+        Err(e) => {
+            eprintln!("处理 Claude Code 规则文件时出错: {}", e);
+            std::process::exit(1);
+        }
     }
 }

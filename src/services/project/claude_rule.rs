@@ -1,6 +1,6 @@
-use std::path::Path;
 use crate::errors::ScxVoidError;
 use crate::utils::fs;
+use std::path::Path;
 
 /// Claude Code 规则文件管理服务
 pub struct ClaudeRuleService;
@@ -14,16 +14,20 @@ impl ClaudeRuleService {
     /// 管理 Claude Code 规则文件
     /// template_type: 模板类型 ("basic" 或 "advanced")
     /// force: 是否强制覆盖现有文件
-    pub async fn manage_rule_file(&self, template_type: &str, force: bool) -> Result<(), ScxVoidError> {
-        let rule_file_path = ".claude-code-rule.md";
+    pub async fn manage_rule_file(
+        &self,
+        template_type: &str,
+        force: bool,
+    ) -> Result<(), ScxVoidError> {
+        let rule_file_path = "AI-RULES.md";
+
+        // 先验证模板类型
+        let content = self.get_template_content(template_type)?;
 
         // 检查文件是否已存在
         if Path::new(rule_file_path).exists() && !force {
             return Err(ScxVoidError::ClaudeRuleFileExists(rule_file_path.into()));
         }
-
-        // 获取模板内容
-        let content = self.get_template_content(template_type)?;
 
         // 写入文件
         fs::write_file(rule_file_path, content.clone())
@@ -55,7 +59,7 @@ impl ClaudeRuleService {
 
     /// 验证现有规则文件状态
     pub fn validate_existing_file(&self) -> Result<bool, ScxVoidError> {
-        let rule_file_path = ".claude-code-rule.md";
+        let rule_file_path = "AI-RULES.md";
 
         if !Path::new(rule_file_path).exists() {
             return Ok(false);
@@ -67,8 +71,8 @@ impl ClaudeRuleService {
 
     /// 备份现有规则文件
     pub async fn backup_existing_file(&self) -> Result<(), ScxVoidError> {
-        let rule_file_path = ".claude-code-rule.md";
-        let backup_path = ".claude-code-rule.md.backup";
+        let rule_file_path = "AI-RULES.md";
+        let backup_path = "AI-RULES.md.backup";
 
         if Path::new(rule_file_path).exists() {
             fs::copy_file(rule_file_path, backup_path)
@@ -92,11 +96,11 @@ pub async fn manage_claude_rule_file(template_type: &str, force: bool) -> Result
 
     // 如果不强制覆盖，先检查现有文件
     if !force && service.validate_existing_file()? {
-        return Err(ScxVoidError::ClaudeRuleFileExists(".claude-code-rule.md".into()));
+        return Err(ScxVoidError::ClaudeRuleFileExists("AI-RULES.md".into()));
     }
 
-    // 备份现有文件（如果存在且不强制覆盖）
-    if Path::new(".claude-code-rule.md").exists() && !force {
+    // 如果使用 force 并且文件已存在，先创建备份
+    if force && Path::new("AI-RULES.md").exists() {
         service.backup_existing_file().await?;
     }
 

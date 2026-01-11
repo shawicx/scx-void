@@ -1,6 +1,6 @@
-use std::path::PathBuf;
+use crate::services::audio::{AudioDecoder, ModelManager, WhisperTranscriber};
 use indicatif::{ProgressBar, ProgressStyle};
-use crate::services::audio::{AudioDecoder, WhisperTranscriber, ModelManager};
+use std::path::PathBuf;
 
 pub struct AudioService {
     decoder: AudioDecoder,
@@ -40,7 +40,8 @@ impl AudioService {
             }
             None => {
                 // 使用默认模型 (base)
-                self.model_manager.get_model_path("base")
+                self.model_manager
+                    .get_model_path("base")
                     .ok_or("未找到默认模型 (base)。请先下载模型或使用 --model 参数指定模型")?
             }
         };
@@ -55,12 +56,14 @@ impl AudioService {
         decode_progress.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.green} {msg}")
-                .unwrap()
+                .unwrap(),
         );
         decode_progress.set_message("解码音频中...");
 
         // 解码音频
-        let pcm_data = self.decoder.decode_to_pcm(&file_path)
+        let pcm_data = self
+            .decoder
+            .decode_to_pcm(&file_path)
             .map_err(|e| format!("音频解码失败: {}", e))?;
 
         decode_progress.finish_with_message("音频解码完成");
@@ -83,13 +86,14 @@ impl AudioService {
         transcribe_progress.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.blue} {msg}")
-                .unwrap()
+                .unwrap(),
         );
         transcribe_progress.set_message("转录中，请稍候...");
 
         // 执行转录
         let language_ref = language.as_deref();
-        let result = transcriber.transcribe_to_text(&pcm_data, language_ref)
+        let result = transcriber
+            .transcribe_to_text(&pcm_data, language_ref)
             .map_err(|e| format!("转录失败: {}", e))?;
 
         transcribe_progress.finish_with_message("转录完成");
@@ -135,7 +139,8 @@ impl AudioService {
             }
             None => {
                 // 使用默认模型 (base)
-                self.model_manager.get_model_path("base")
+                self.model_manager
+                    .get_model_path("base")
                     .ok_or("未找到默认模型 (base)。请先下载模型或使用 --model 参数指定模型")?
             }
         };
@@ -146,7 +151,9 @@ impl AudioService {
         println!("正在解码音频文件: {:?}", file_path);
 
         // 解码音频
-        let pcm_data = self.decoder.decode_to_pcm(&file_path)
+        let pcm_data = self
+            .decoder
+            .decode_to_pcm(&file_path)
             .map_err(|e| format!("音频解码失败: {}", e))?;
 
         if pcm_data.is_empty() {
@@ -163,7 +170,8 @@ impl AudioService {
 
         // 执行转录获取分段
         let language_ref = language.as_deref();
-        let segments = transcriber.transcribe(&pcm_data, language_ref)
+        let segments = transcriber
+            .transcribe(&pcm_data, language_ref)
             .map_err(|e| format!("转录失败: {}", e))?;
 
         // 生成 SRT 格式输出
@@ -216,7 +224,8 @@ impl AudioService {
             }
             None => {
                 // 使用默认模型 (base)
-                self.model_manager.get_model_path("base")
+                self.model_manager
+                    .get_model_path("base")
                     .ok_or("未找到默认模型 (base)。请先下载模型或使用 --model 参数指定模型")?
             }
         };
@@ -231,12 +240,14 @@ impl AudioService {
         decode_progress.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.green} {msg}")
-                .unwrap()
+                .unwrap(),
         );
         decode_progress.set_message("解码音频中...");
 
         // 解码音频
-        let pcm_data = self.decoder.decode_to_pcm(&file_path)
+        let pcm_data = self
+            .decoder
+            .decode_to_pcm(&file_path)
             .map_err(|e| format!("音频解码失败: {}", e))?;
 
         decode_progress.finish_with_message("音频解码完成");
@@ -248,7 +259,11 @@ impl AudioService {
 
         // 应用时间过滤
         let filtered_pcm_data = self.apply_time_filter(&pcm_data, skip_seconds, end_time)?;
-        println!("时间过滤后样本数: {} (跳过前 {} 秒)", filtered_pcm_data.len(), skip_seconds);
+        println!(
+            "时间过滤后样本数: {} (跳过前 {} 秒)",
+            filtered_pcm_data.len(),
+            skip_seconds
+        );
 
         if filtered_pcm_data.is_empty() {
             return Err("时间过滤后音频数据为空".to_string());
@@ -267,13 +282,14 @@ impl AudioService {
         transcribe_progress.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.blue} {msg}")
-                .unwrap()
+                .unwrap(),
         );
         transcribe_progress.set_message("转录中，请稍候...");
 
         // 执行转录
         let language_ref = language.as_deref();
-        let result = transcriber.transcribe_to_text(&filtered_pcm_data, language_ref)
+        let result = transcriber
+            .transcribe_to_text(&filtered_pcm_data, language_ref)
             .map_err(|e| format!("转录失败: {}", e))?;
 
         transcribe_progress.finish_with_message("转录完成");
@@ -322,7 +338,8 @@ impl AudioService {
             }
             None => {
                 // 使用默认模型 (base)
-                self.model_manager.get_model_path("base")
+                self.model_manager
+                    .get_model_path("base")
                     .ok_or("未找到默认模型 (base)。请先下载模型或使用 --model 参数指定模型")?
             }
         };
@@ -333,7 +350,9 @@ impl AudioService {
         println!("正在解码音频文件: {:?}", file_path);
 
         // 解码音频
-        let pcm_data = self.decoder.decode_to_pcm(&file_path)
+        let pcm_data = self
+            .decoder
+            .decode_to_pcm(&file_path)
             .map_err(|e| format!("音频解码失败: {}", e))?;
 
         if pcm_data.is_empty() {
@@ -342,7 +361,11 @@ impl AudioService {
 
         // 应用时间过滤
         let filtered_pcm_data = self.apply_time_filter(&pcm_data, skip_seconds, end_time)?;
-        println!("时间过滤后样本数: {} (跳过前 {} 秒)", filtered_pcm_data.len(), skip_seconds);
+        println!(
+            "时间过滤后样本数: {} (跳过前 {} 秒)",
+            filtered_pcm_data.len(),
+            skip_seconds
+        );
 
         if filtered_pcm_data.is_empty() {
             return Err("时间过滤后音频数据为空".to_string());
@@ -358,16 +381,20 @@ impl AudioService {
 
         // 执行转录获取分段
         let language_ref = language.as_deref();
-        let segments = transcriber.transcribe(&filtered_pcm_data, language_ref)
+        let segments = transcriber
+            .transcribe(&filtered_pcm_data, language_ref)
             .map_err(|e| format!("转录失败: {}", e))?;
 
         // 调整时间戳以反映原始音频时间（加上跳过的时间）
-        let adjusted_segments: Vec<_> = segments.iter().map(|segment| {
-            let mut adjusted_segment = segment.clone();
-            adjusted_segment.start_ms += (skip_seconds * 1000) as u32;
-            adjusted_segment.end_ms += (skip_seconds * 1000) as u32;
-            adjusted_segment
-        }).collect();
+        let adjusted_segments: Vec<_> = segments
+            .iter()
+            .map(|segment| {
+                let mut adjusted_segment = segment.clone();
+                adjusted_segment.start_ms += (skip_seconds * 1000) as u32;
+                adjusted_segment.end_ms += (skip_seconds * 1000) as u32;
+                adjusted_segment
+            })
+            .collect();
 
         // 生成 SRT 格式输出
         let mut srt_content = String::new();
@@ -393,7 +420,12 @@ impl AudioService {
         Ok(())
     }
 
-    fn apply_time_filter(&self, pcm_data: &[i16], skip_seconds: u64, end_time: Option<u64>) -> Result<Vec<i16>, String> {
+    fn apply_time_filter(
+        &self,
+        pcm_data: &[i16],
+        skip_seconds: u64,
+        end_time: Option<u64>,
+    ) -> Result<Vec<i16>, String> {
         // Whisper 音频采样率是 16kHz，即 16000 样本/秒
         const SAMPLE_RATE: u64 = 16000;
 
@@ -452,7 +484,8 @@ impl AudioService {
             }
             None => {
                 // 使用默认模型 (base)
-                self.model_manager.get_model_path("base")
+                self.model_manager
+                    .get_model_path("base")
                     .ok_or("未找到默认模型 (base)。请先下载模型或使用 --model 参数指定模型")?
             }
         };
@@ -467,12 +500,14 @@ impl AudioService {
         decode_progress.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.green} {msg}")
-                .unwrap()
+                .unwrap(),
         );
         decode_progress.set_message("解码音频中...");
 
         // 解码音频
-        let pcm_data = self.decoder.decode_to_pcm(&file_path)
+        let pcm_data = self
+            .decoder
+            .decode_to_pcm(&file_path)
             .map_err(|e| format!("音频解码失败: {}", e))?;
 
         decode_progress.finish_with_message("音频解码完成");
@@ -484,7 +519,11 @@ impl AudioService {
 
         // 应用时间过滤
         let filtered_pcm_data = self.apply_time_filter(&pcm_data, skip_seconds, end_time)?;
-        println!("时间过滤后样本数: {} (跳过前 {} 秒)", filtered_pcm_data.len(), skip_seconds);
+        println!(
+            "时间过滤后样本数: {} (跳过前 {} 秒)",
+            filtered_pcm_data.len(),
+            skip_seconds
+        );
 
         if filtered_pcm_data.is_empty() {
             return Err("时间过滤后音频数据为空".to_string());
@@ -496,20 +535,30 @@ impl AudioService {
         let mut transcriber = WhisperTranscriber::new(&model_path.to_string_lossy())
             .map_err(|e| format!("无法初始化转录器: {}", e))?;
 
-        println!("开始转录 (温度: {}, Beam大小: {}, 静音阈值: {})...", temperature, beam_size, no_speech_threshold);
+        println!(
+            "开始转录 (温度: {}, Beam大小: {}, 静音阈值: {})...",
+            temperature, beam_size, no_speech_threshold
+        );
 
         // 显示转录进度
         let transcribe_progress = ProgressBar::new_spinner();
         transcribe_progress.set_style(
             ProgressStyle::default_spinner()
                 .template("{spinner:.blue} {msg}")
-                .unwrap()
+                .unwrap(),
         );
         transcribe_progress.set_message("转录中，请稍候...");
 
         // 执行转录
         let language_ref = language.as_deref();
-        let result = transcriber.transcribe_to_text_with_params(&filtered_pcm_data, language_ref, temperature, beam_size, no_speech_threshold)
+        let result = transcriber
+            .transcribe_to_text_with_params(
+                &filtered_pcm_data,
+                language_ref,
+                temperature,
+                beam_size,
+                no_speech_threshold,
+            )
             .map_err(|e| format!("转录失败: {}", e))?;
 
         transcribe_progress.finish_with_message("转录完成");
@@ -559,7 +608,8 @@ impl AudioService {
             }
             None => {
                 // 使用默认模型 (base)
-                self.model_manager.get_model_path("base")
+                self.model_manager
+                    .get_model_path("base")
                     .ok_or("未找到默认模型 (base)。请先下载模型或使用 --model 参数指定模型")?
             }
         };
@@ -570,7 +620,9 @@ impl AudioService {
         println!("正在解码音频文件: {:?}", file_path);
 
         // 解码音频
-        let pcm_data = self.decoder.decode_to_pcm(&file_path)
+        let pcm_data = self
+            .decoder
+            .decode_to_pcm(&file_path)
             .map_err(|e| format!("音频解码失败: {}", e))?;
 
         if pcm_data.is_empty() {
@@ -579,7 +631,11 @@ impl AudioService {
 
         // 应用时间过滤
         let filtered_pcm_data = self.apply_time_filter(&pcm_data, skip_seconds, end_time)?;
-        println!("时间过滤后样本数: {} (跳过前 {} 秒)", filtered_pcm_data.len(), skip_seconds);
+        println!(
+            "时间过滤后样本数: {} (跳过前 {} 秒)",
+            filtered_pcm_data.len(),
+            skip_seconds
+        );
 
         if filtered_pcm_data.is_empty() {
             return Err("时间过滤后音频数据为空".to_string());
@@ -591,20 +647,33 @@ impl AudioService {
         let mut transcriber = WhisperTranscriber::new(&model_path.to_string_lossy())
             .map_err(|e| format!("无法初始化转录器: {}", e))?;
 
-        println!("开始转录（带时间戳） (温度: {}, Beam大小: {}, 静音阈值: {})...", temperature, beam_size, no_speech_threshold);
+        println!(
+            "开始转录（带时间戳） (温度: {}, Beam大小: {}, 静音阈值: {})...",
+            temperature, beam_size, no_speech_threshold
+        );
 
         // 执行转录获取分段
         let language_ref = language.as_deref();
-        let segments = transcriber.transcribe_with_params(&filtered_pcm_data, language_ref, temperature, beam_size, no_speech_threshold)
+        let segments = transcriber
+            .transcribe_with_params(
+                &filtered_pcm_data,
+                language_ref,
+                temperature,
+                beam_size,
+                no_speech_threshold,
+            )
             .map_err(|e| format!("转录失败: {}", e))?;
 
         // 调整时间戳以反映原始音频时间（加上跳过的时间）
-        let adjusted_segments: Vec<_> = segments.iter().map(|segment| {
-            let mut adjusted_segment = segment.clone();
-            adjusted_segment.start_ms += (skip_seconds * 1000) as u32;
-            adjusted_segment.end_ms += (skip_seconds * 1000) as u32;
-            adjusted_segment
-        }).collect();
+        let adjusted_segments: Vec<_> = segments
+            .iter()
+            .map(|segment| {
+                let mut adjusted_segment = segment.clone();
+                adjusted_segment.start_ms += (skip_seconds * 1000) as u32;
+                adjusted_segment.end_ms += (skip_seconds * 1000) as u32;
+                adjusted_segment
+            })
+            .collect();
 
         // 生成 SRT 格式输出
         let mut srt_content = String::new();
@@ -647,7 +716,9 @@ impl AudioService {
         let model_path = self.model_manager.download_model(model_name).await?;
 
         // 验证下载的模型
-        if let Err(e) = crate::services::audio::validate_whisper_model(&model_path.to_string_lossy()) {
+        if let Err(e) =
+            crate::services::audio::validate_whisper_model(&model_path.to_string_lossy())
+        {
             return Err(format!("模型下载失败，文件无效: {}", e));
         }
 

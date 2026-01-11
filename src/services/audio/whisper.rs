@@ -14,11 +14,22 @@ impl WhisperTranscriber {
     }
 
     #[allow(dead_code)]
-    pub fn transcribe(&mut self, pcm_data: &[i16], language: Option<&str>) -> Result<Vec<TranscriptionSegment>, String> {
+    pub fn transcribe(
+        &mut self,
+        pcm_data: &[i16],
+        language: Option<&str>,
+    ) -> Result<Vec<TranscriptionSegment>, String> {
         self.transcribe_with_params(pcm_data, language, 0.3, 5, 0.6)
     }
 
-    pub fn transcribe_with_params(&mut self, pcm_data: &[i16], language: Option<&str>, temperature: f32, beam_size: i32, no_speech_threshold: f32) -> Result<Vec<TranscriptionSegment>, String> {
+    pub fn transcribe_with_params(
+        &mut self,
+        pcm_data: &[i16],
+        language: Option<&str>,
+        temperature: f32,
+        beam_size: i32,
+        no_speech_threshold: f32,
+    ) -> Result<Vec<TranscriptionSegment>, String> {
         if pcm_data.is_empty() {
             return Err("音频数据为空".to_string());
         }
@@ -29,7 +40,7 @@ impl WhisperTranscriber {
         // 创建完整的参数 - 使用 Beam Search 提高准确性
         let mut params = FullParams::new(SamplingStrategy::BeamSearch {
             beam_size: beam_size.max(1),
-            patience: 1.0
+            patience: 1.0,
         });
 
         // 设置语言
@@ -59,23 +70,30 @@ impl WhisperTranscriber {
         params.set_print_timestamps(false);
 
         // 开始转录
-        let mut state = self.context.create_state()
+        let mut state = self
+            .context
+            .create_state()
             .map_err(|e| format!("创建状态失败: {}", e))?;
 
-        state.full(params, &pcm_f32)
+        state
+            .full(params, &pcm_f32)
             .map_err(|e| format!("转录失败: {}", e))?;
 
         // 获取结果
-        let num_segments = state.full_n_segments()
+        let num_segments = state
+            .full_n_segments()
             .map_err(|e| format!("获取分段数量失败: {}", e))?;
         let mut segments = Vec::new();
 
         for i in 0..num_segments {
-            let start_timestamp = state.full_get_segment_t0(i)
+            let start_timestamp = state
+                .full_get_segment_t0(i)
                 .map_err(|e| format!("获取开始时间戳失败: {}", e))?;
-            let end_timestamp = state.full_get_segment_t1(i)
+            let end_timestamp = state
+                .full_get_segment_t1(i)
                 .map_err(|e| format!("获取结束时间戳失败: {}", e))?;
-            let text = state.full_get_segment_text(i)
+            let text = state
+                .full_get_segment_text(i)
                 .map_err(|e| format!("获取文本失败: {}", e))?;
 
             segments.push(TranscriptionSegment {
@@ -89,13 +107,34 @@ impl WhisperTranscriber {
     }
 
     #[allow(dead_code)]
-    pub fn transcribe_to_text(&mut self, pcm_data: &[i16], language: Option<&str>) -> Result<String, String> {
+    pub fn transcribe_to_text(
+        &mut self,
+        pcm_data: &[i16],
+        language: Option<&str>,
+    ) -> Result<String, String> {
         self.transcribe_to_text_with_params(pcm_data, language, 0.3, 5, 0.6)
     }
 
-    pub fn transcribe_to_text_with_params(&mut self, pcm_data: &[i16], language: Option<&str>, temperature: f32, beam_size: i32, no_speech_threshold: f32) -> Result<String, String> {
-        let segments = self.transcribe_with_params(pcm_data, language, temperature, beam_size, no_speech_threshold)?;
-        let text: String = segments.iter().map(|s| s.text.as_str()).collect::<Vec<_>>().join(" ");
+    pub fn transcribe_to_text_with_params(
+        &mut self,
+        pcm_data: &[i16],
+        language: Option<&str>,
+        temperature: f32,
+        beam_size: i32,
+        no_speech_threshold: f32,
+    ) -> Result<String, String> {
+        let segments = self.transcribe_with_params(
+            pcm_data,
+            language,
+            temperature,
+            beam_size,
+            no_speech_threshold,
+        )?;
+        let text: String = segments
+            .iter()
+            .map(|s| s.text.as_str())
+            .collect::<Vec<_>>()
+            .join(" ");
         Ok(text)
     }
 }

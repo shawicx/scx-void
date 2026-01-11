@@ -86,11 +86,7 @@ impl GitTemplate {
     }
 
     /// 创建自定义模板
-    pub fn custom(
-        repository_url: &str,
-        branch: Option<&str>,
-        template_path: Option<&str>,
-    ) -> Self {
+    pub fn custom(repository_url: &str, branch: Option<&str>, template_path: Option<&str>) -> Self {
         Self {
             id: "custom".to_string(),
             display_name: "自定义仓库".to_string(),
@@ -110,7 +106,7 @@ pub struct CloneOptions {
     pub repository_url: String,
     pub branch: Option<String>,
     pub target_dir: String,
-    pub depth: Option<u32>,  // 浅克隆深度，提高速度
+    pub depth: Option<u32>,    // 浅克隆深度，提高速度
     pub sparse_checkout: bool, // 是否使用稀疏检出
 }
 
@@ -144,7 +140,7 @@ impl CloneOptions {
 /// 模板源枚举
 #[derive(Debug, Clone)]
 pub enum TemplateSource {
-    Local(String),  // 本地模板名称
+    Local(String),    // 本地模板名称
     Git(GitTemplate), // Git 模板配置
 }
 

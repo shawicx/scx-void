@@ -56,10 +56,7 @@ pub fn template_exists(id: &str) -> bool {
 /// 获取模板 ID 到模板的映射
 pub fn get_template_map() -> HashMap<String, GitTemplate> {
     let templates = get_all_templates();
-    templates
-        .into_iter()
-        .map(|t| (t.id.clone(), t))
-        .collect()
+    templates.into_iter().map(|t| (t.id.clone(), t)).collect()
 }
 
 #[cfg(test)]

@@ -1,10 +1,10 @@
 use clap::{Parser, Subcommand};
 
 mod cli;
-mod services;
-mod utils;
 mod errors;
 mod platform;
+mod services;
+mod utils;
 
 #[derive(Parser)]
 #[command(name = "scx-void")]
@@ -27,6 +27,7 @@ enum Commands {
         #[command(subcommand)]
         command: cli::SystemCommands,
     },
+    #[cfg(feature = "audio")]
     /// 音频转录相关命令
     Audio {
         #[command(subcommand)]
@@ -48,6 +49,7 @@ async fn main() {
                 std::process::exit(1);
             }
         }
+        #[cfg(feature = "audio")]
         Commands::Audio { command } => {
             let audio_command = cli::AudioCommands { command };
             if let Err(e) = audio_command.run().await {

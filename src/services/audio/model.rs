@@ -1,6 +1,6 @@
-use std::path::{Path, PathBuf};
-use std::fs;
 use indicatif::{ProgressBar, ProgressStyle};
+use std::fs;
+use std::path::{Path, PathBuf};
 use tokio::io::AsyncWriteExt;
 
 pub struct ModelManager {
@@ -21,8 +21,7 @@ impl ModelManager {
         let models_dir = home_dir.join(".scx-void").join("models");
 
         // 确保模型目录存在
-        fs::create_dir_all(&models_dir)
-            .map_err(|e| format!("无法创建模型目录: {}", e))?;
+        fs::create_dir_all(&models_dir).map_err(|e| format!("无法创建模型目录: {}", e))?;
 
         Ok(Self { models_dir })
     }
@@ -32,31 +31,41 @@ impl ModelManager {
             ModelInfo {
                 name: "tiny".to_string(),
                 size: "39 MB".to_string(),
-                download_url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin".to_string(),
+                download_url:
+                    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.bin"
+                        .to_string(),
                 file_size_mb: 39,
             },
             ModelInfo {
                 name: "base".to_string(),
                 size: "74 MB".to_string(),
-                download_url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin".to_string(),
+                download_url:
+                    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.bin"
+                        .to_string(),
                 file_size_mb: 74,
             },
             ModelInfo {
                 name: "small".to_string(),
                 size: "244 MB".to_string(),
-                download_url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin".to_string(),
+                download_url:
+                    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small.bin"
+                        .to_string(),
                 file_size_mb: 244,
             },
             ModelInfo {
                 name: "medium".to_string(),
                 size: "769 MB".to_string(),
-                download_url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin".to_string(),
+                download_url:
+                    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin"
+                        .to_string(),
                 file_size_mb: 769,
             },
             ModelInfo {
                 name: "large".to_string(),
                 size: "1550 MB".to_string(),
-                download_url: "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large.bin".to_string(),
+                download_url:
+                    "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large.bin"
+                        .to_string(),
                 file_size_mb: 1550,
             },
         ]
@@ -64,10 +73,15 @@ impl ModelManager {
 
     pub async fn download_model(&self, model_name: &str) -> Result<PathBuf, String> {
         let models = Self::get_available_models();
-        let model_info = models.iter()
+        let model_info = models
+            .iter()
             .find(|m| m.name == model_name)
-            .ok_or_else(|| format!("未知的模型大小: {}。可用选项: tiny, base, small, medium, large",
-                model_name))?;
+            .ok_or_else(|| {
+                format!(
+                    "未知的模型大小: {}。可用选项: tiny, base, small, medium, large",
+                    model_name
+                )
+            })?;
 
         let filename = format!("ggml-{}.bin", model_name);
         let model_path = self.models_dir.join(&filename);
@@ -90,7 +104,8 @@ impl ModelManager {
 
         // 发起 HTTP 请求
         let client = reqwest::Client::new();
-        let response = client.get(&model_info.download_url)
+        let response = client
+            .get(&model_info.download_url)
             .send()
             .await
             .map_err(|e| format!("下载失败: {}", e))?;
@@ -99,14 +114,14 @@ impl ModelManager {
             return Err(format!("下载失败: HTTP {}", response.status()));
         }
 
-        let total_size = response.content_length()
-            .ok_or("无法获取文件大小")?;
+        let total_size = response.content_length().ok_or("无法获取文件大小")?;
 
         progress_bar.set_length(total_size);
 
         // 创建临时文件
         let temp_path = model_path.with_extension("tmp");
-        let mut file = tokio::fs::File::create(&temp_path).await
+        let mut file = tokio::fs::File::create(&temp_path)
+            .await
             .map_err(|e| format!("无法创建临时文件: {}", e))?;
 
         let mut downloaded = 0u64;
@@ -115,20 +130,21 @@ impl ModelManager {
         use futures_util::StreamExt;
         while let Some(chunk) = stream.next().await {
             let chunk = chunk.map_err(|e| format!("下载中断: {}", e))?;
-            file.write_all(&chunk).await
+            file.write_all(&chunk)
+                .await
                 .map_err(|e| format!("写入文件失败: {}", e))?;
 
             downloaded += chunk.len() as u64;
             progress_bar.set_position(downloaded);
         }
 
-        file.flush().await
+        file.flush()
+            .await
             .map_err(|e| format!("刷新文件失败: {}", e))?;
         drop(file);
 
         // 重命名临时文件为目标文件
-        fs::rename(&temp_path, &model_path)
-            .map_err(|e| format!("保存模型文件失败: {}", e))?;
+        fs::rename(&temp_path, &model_path).map_err(|e| format!("保存模型文件失败: {}", e))?;
 
         progress_bar.finish_with_message("下载完成");
         println!("模型已保存到: {:?}", model_path);
@@ -149,7 +165,11 @@ impl ModelManager {
             for entry in entries.flatten() {
                 if let Some(file_name) = entry.file_name().to_str() {
                     // 检查文件名是否包含模型名称（不区分大小写）
-                    if file_name.to_lowercase().contains(&model_name.to_lowercase()) && file_name.ends_with(".bin") {
+                    if file_name
+                        .to_lowercase()
+                        .contains(&model_name.to_lowercase())
+                        && file_name.ends_with(".bin")
+                    {
                         println!("找到匹配的模型文件: {}", file_name);
                         return Some(entry.path());
                     }
@@ -179,7 +199,10 @@ impl ModelManager {
                 if let Some(filename) = entry.file_name().to_str() {
                     if filename.starts_with("ggml-") && filename.ends_with(".bin") {
                         // 提取模型名称 (ggml-tiny.bin -> tiny)
-                        if let Some(model_name) = filename.strip_prefix("ggml-").and_then(|s| s.strip_suffix(".bin")) {
+                        if let Some(model_name) = filename
+                            .strip_prefix("ggml-")
+                            .and_then(|s| s.strip_suffix(".bin"))
+                        {
                             models.push(model_name.to_string());
                         }
                     }
@@ -196,7 +219,8 @@ impl ModelManager {
             return Err(format!("模型文件不存在: {:?}", model_path));
         }
 
-        let metadata = model_path.metadata()
+        let metadata = model_path
+            .metadata()
             .map_err(|e| format!("无法读取模型文件信息: {}", e))?;
 
         if metadata.len() == 0 {

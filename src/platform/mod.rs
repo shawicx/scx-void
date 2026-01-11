@@ -1,5 +1,5 @@
-pub mod windows;
 pub mod macos;
+pub mod windows;
 
 use macos::MacosPlatform;
 

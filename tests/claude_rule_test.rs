@@ -1,7 +1,7 @@
 use assert_cmd::Command;
 use std::fs;
-use std::path::Path;
 use std::os::unix::prelude::OsStringExt;
+use std::path::Path;
 
 #[test]
 fn test_claude_rule_basic_template() {
@@ -15,10 +15,10 @@ fn test_claude_rule_basic_template() {
     assert.success();
 
     // 检查文件是否生成
-    assert!(Path::new(".claude-code-rule.md").exists());
+    assert!(Path::new("AI-RULES.md").exists());
 
     // 检查文件内容
-    let content = fs::read_to_string(".claude-code-rule.md").unwrap();
+    let content = fs::read_to_string("AI-RULES.md").unwrap();
     assert!(content.contains("AI Code Agent - Basic Project Rules"));
     assert!(content.contains("核心原则"));
 
@@ -37,10 +37,10 @@ fn test_claude_rule_advanced_template() {
     assert.success();
 
     // 检查文件是否生成
-    assert!(Path::new(".claude-code-rule.md").exists());
+    assert!(Path::new("AI-RULES.md").exists());
 
     // 检查文件内容
-    let content = fs::read_to_string(".claude-code-rule.md").unwrap();
+    let content = fs::read_to_string("AI-RULES.md").unwrap();
     assert!(content.contains("AI Code Agent - Multi-Project CLI Rules"));
     assert!(content.contains("禁止事项"));
     assert!(content.contains("兼容性要求"));
@@ -54,7 +54,7 @@ fn test_claude_rule_force_overwrite() {
     cleanup_test_files();
 
     // 首先创建一个文件
-    fs::write(".claude-code-rule.md", "# Existing content").unwrap();
+    fs::write("AI-RULES.md", "# Existing content").unwrap();
 
     // 尝试不使用 force 覆盖
     let mut cmd = Command::cargo_bin("scx-void").unwrap();
@@ -73,7 +73,7 @@ fn test_claude_rule_force_overwrite() {
     assert.success();
 
     // 检查内容是否被覆盖
-    let content = fs::read_to_string(".claude-code-rule.md").unwrap();
+    let content = fs::read_to_string("AI-RULES.md").unwrap();
     assert!(content.contains("AI Code Agent - Basic Project Rules"));
     assert!(!content.contains("Existing content"));
 
@@ -102,7 +102,7 @@ fn test_claude_rule_backup_functionality() {
     cleanup_test_files();
 
     // 首先创建一个文件
-    fs::write(".claude-code-rule.md", "# Original content").unwrap();
+    fs::write("AI-RULES.md", "# Original content").unwrap();
 
     // 使用 force 覆盖（应该创建备份）
     let mut cmd = Command::cargo_bin("scx-void").unwrap();
@@ -112,20 +112,17 @@ fn test_claude_rule_backup_functionality() {
     assert.success();
 
     // 检查备份文件是否创建
-    assert!(Path::new(".claude-code-rule.md.backup").exists());
+    assert!(Path::new("AI-RULES.md.backup").exists());
 
     // 检查备份文件内容
-    let backup_content = fs::read_to_string(".claude-code-rule.md.backup").unwrap();
+    let backup_content = fs::read_to_string("AI-RULES.md.backup").unwrap();
     assert_eq!(backup_content, "# Original content");
 
     cleanup_test_files();
 }
 
 fn cleanup_test_files() {
-    let files_to_remove = [
-        ".claude-code-rule.md",
-        ".claude-code-rule.md.backup",
-    ];
+    let files_to_remove = ["AI-RULES.md", "AI-RULES.md.backup"];
 
     for file in &files_to_remove {
         if Path::new(file).exists() {

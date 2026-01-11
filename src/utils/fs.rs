@@ -24,12 +24,12 @@ pub fn copy_dir_all(src: &str, dst: &str) -> std::io::Result<()> {
         if file_type.is_dir() {
             copy_dir_all(
                 entry.path().to_str().unwrap(),
-                &format!("{}/{}", dst, entry.file_name().to_str().unwrap())
+                &format!("{}/{}", dst, entry.file_name().to_str().unwrap()),
             )?;
         } else {
             fs::copy(
                 entry.path(),
-                format!("{}/{}", dst, entry.file_name().to_str().unwrap())
+                format!("{}/{}", dst, entry.file_name().to_str().unwrap()),
             )?;
         }
     }

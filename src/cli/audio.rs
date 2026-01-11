@@ -1,7 +1,7 @@
+use crate::errors::ScxVoidError;
+use crate::services::audio::audio_service::AudioService;
 use clap::{Parser, Subcommand};
 use std::path::PathBuf;
-use crate::services::audio::audio_service::AudioService;
-use crate::errors::ScxVoidError;
 
 #[derive(Parser, Debug)]
 pub struct AudioCommands {
@@ -83,24 +83,70 @@ pub enum AudioSubCommands {
 
 impl AudioCommands {
     pub async fn run(self) -> Result<(), ScxVoidError> {
-        let mut audio_service = AudioService::new()
-            .map_err(|e| ScxVoidError::GeneralError(e))?;
+        let mut audio_service = AudioService::new().map_err(|e| ScxVoidError::GeneralError(e))?;
 
         match self.command {
-            AudioSubCommands::Transcribe { file, lang, model, output, skip_seconds, end_time, temperature, beam_size, no_speech_threshold } => {
-                audio_service.transcribe_file_with_advanced_params(file, lang, model, output, skip_seconds, end_time, temperature, beam_size, no_speech_threshold).await
+            AudioSubCommands::Transcribe {
+                file,
+                lang,
+                model,
+                output,
+                skip_seconds,
+                end_time,
+                temperature,
+                beam_size,
+                no_speech_threshold,
+            } => {
+                audio_service
+                    .transcribe_file_with_advanced_params(
+                        file,
+                        lang,
+                        model,
+                        output,
+                        skip_seconds,
+                        end_time,
+                        temperature,
+                        beam_size,
+                        no_speech_threshold,
+                    )
+                    .await
                     .map_err(|e| ScxVoidError::TranscriptionError(e))?;
             }
-            AudioSubCommands::TranscribeWithTimestamps { file, lang, model, output, skip_seconds, end_time, temperature, beam_size, no_speech_threshold } => {
-                audio_service.transcribe_with_timestamps_and_advanced_params(file, lang, model, output, skip_seconds, end_time, temperature, beam_size, no_speech_threshold).await
+            AudioSubCommands::TranscribeWithTimestamps {
+                file,
+                lang,
+                model,
+                output,
+                skip_seconds,
+                end_time,
+                temperature,
+                beam_size,
+                no_speech_threshold,
+            } => {
+                audio_service
+                    .transcribe_with_timestamps_and_advanced_params(
+                        file,
+                        lang,
+                        model,
+                        output,
+                        skip_seconds,
+                        end_time,
+                        temperature,
+                        beam_size,
+                        no_speech_threshold,
+                    )
+                    .await
                     .map_err(|e| ScxVoidError::TranscriptionError(e))?;
             }
             AudioSubCommands::DownloadModel { size } => {
-                audio_service.download_model(&size).await
+                audio_service
+                    .download_model(&size)
+                    .await
                     .map_err(|e| ScxVoidError::ModelDownloadError(e))?;
             }
             AudioSubCommands::ListModels => {
-                audio_service.list_models()
+                audio_service
+                    .list_models()
                     .map_err(|e| ScxVoidError::GeneralError(e))?;
             }
         }

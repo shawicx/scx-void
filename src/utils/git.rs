@@ -63,15 +63,9 @@ pub fn get_default_branch(repository_url: &str) -> Result<String, ScxVoidError> 
 
 /// 检查 Git 仓库的分支是否存在
 pub fn branch_exists(repository_url: &str, branch: &str) -> Result<bool, ScxVoidError> {
-    let output = cmd!(
-        "git",
-        "ls-remote",
-        "--heads",
-        repository_url,
-        branch
-    )
-    .read()
-    .map_err(|e| ScxVoidError::GitCloneError(format!("无法检查分支: {}", e)))?;
+    let output = cmd!("git", "ls-remote", "--heads", repository_url, branch)
+        .read()
+        .map_err(|e| ScxVoidError::GitCloneError(format!("无法检查分支: {}", e)))?;
 
     let stdout = output.as_str();
     Ok(!stdout.trim().is_empty())
@@ -87,7 +81,9 @@ pub fn list_branches(repository_url: &str) -> Result<Vec<String>, ScxVoidError> 
     let branches: Vec<String> = stdout
         .lines()
         .filter_map(|line| {
-            line.split('\t').nth(1).and_then(|s| s.strip_prefix("refs/heads/"))
+            line.split('\t')
+                .nth(1)
+                .and_then(|s| s.strip_prefix("refs/heads/"))
         })
         .map(String::from)
         .collect();

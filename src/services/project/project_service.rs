@@ -1,13 +1,18 @@
-use std::path::Path;
 use crate::errors::ScxVoidError;
-use crate::utils::fs;
 use crate::services::project::generator;
+use crate::utils::fs;
+use std::path::Path;
 
 /// 创建具有指定名称和类型的项目
-pub async fn create_project(project_name: &str, project_type_index: usize) -> Result<(), ScxVoidError> {
+pub async fn create_project(
+    project_name: &str,
+    project_type_index: usize,
+) -> Result<(), ScxVoidError> {
     // 验证项目名称
     if project_name.trim().is_empty() {
-        return Err(ScxVoidError::InvalidProjectName("项目名称不能为空".to_string()));
+        return Err(ScxVoidError::InvalidProjectName(
+            "项目名称不能为空".to_string(),
+        ));
     }
 
     // 检查项目目录是否已存在
@@ -16,9 +21,8 @@ pub async fn create_project(project_name: &str, project_type_index: usize) -> Re
     }
 
     // 创建项目目录
-    fs::create_dir(project_name).map_err(|e| {
-        ScxVoidError::FileSystemError(format!("创建项目目录失败: {}", e))
-    })?;
+    fs::create_dir(project_name)
+        .map_err(|e| ScxVoidError::FileSystemError(format!("创建项目目录失败: {}", e)))?;
 
     // 根据项目类型索引生成相应的项目结构
     match project_type_index {
@@ -36,10 +40,7 @@ async fn create_node_ts_project(project_name: &str) -> Result<(), ScxVoidError> 
     println!("创建 Node TypeScript 项目...");
 
     // 使用生成器复制模板文件
-    generator::generate_from_template(
-        project_name,
-        "node_ts"
-    ).await?;
+    generator::generate_from_template(project_name, "node_ts").await?;
 
     Ok(())
 }
@@ -49,10 +50,7 @@ async fn create_react_project(project_name: &str) -> Result<(), ScxVoidError> {
     println!("创建 React 项目...");
 
     // 使用生成器复制模板文件
-    generator::generate_from_template(
-        project_name,
-        "react"
-    ).await?;
+    generator::generate_from_template(project_name, "react").await?;
 
     Ok(())
 }
@@ -62,10 +60,7 @@ async fn create_vue_project(project_name: &str) -> Result<(), ScxVoidError> {
     println!("创建 Vue 项目...");
 
     // 使用生成器复制模板文件
-    generator::generate_from_template(
-        project_name,
-        "vue"
-    ).await?;
+    generator::generate_from_template(project_name, "vue").await?;
 
     Ok(())
 }
@@ -75,10 +70,7 @@ async fn create_nestjs_project(project_name: &str) -> Result<(), ScxVoidError> {
     println!("创建 NestJS 项目...");
 
     // 使用生成器复制模板文件
-    generator::generate_from_template(
-        project_name,
-        "nestjs"
-    ).await?;
+    generator::generate_from_template(project_name, "nestjs").await?;
 
     Ok(())
 }
@@ -88,10 +80,7 @@ async fn create_nextjs_project(project_name: &str) -> Result<(), ScxVoidError> {
     println!("创建 NextJS 项目...");
 
     // 使用生成器复制模板文件
-    generator::generate_from_template(
-        project_name,
-        "nextjs"
-    ).await?;
+    generator::generate_from_template(project_name, "nextjs").await?;
 
     Ok(())
 }

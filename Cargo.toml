@@ -3,13 +3,17 @@ name = "scx-void"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+audio = ["whisper-rs", "symphonia"]
+
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 dialoguer = "0.11"
 duct = "0.13"
 tokio = { version = "1.0", features = ["full"] }
-symphonia = { version = "0.5", features = ["aac", "isomp4"] }
-whisper-rs = "0.10"
+symphonia = { version = "0.5", features = ["aac", "isomp4"], optional = true }
+whisper-rs = { version = "0.10", optional = true }
 indicatif = "0.17"
 reqwest = { version = "0.11", features = ["stream"] }
 dirs = "5.0"

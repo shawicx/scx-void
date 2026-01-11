@@ -45,16 +45,28 @@ impl std::fmt::Display for ScxVoidError {
                 write!(f, "Unsupported project type index: {}", index)
             }
             ScxVoidError::ClaudeRuleFileExists(path) => {
-                write!(f, "Claude rule file already exists: {:?}. Use --force to overwrite.", path)
+                write!(
+                    f,
+                    "Claude rule file already exists: {:?}. Use --force to overwrite.",
+                    path
+                )
             }
             ScxVoidError::InvalidTemplateType(template) => {
-                write!(f, "Invalid template type: {}. Available: basic, advanced", template)
+                write!(
+                    f,
+                    "Invalid template type: {}. Available: basic, advanced",
+                    template
+                )
             }
             ScxVoidError::AudioFileNotFound(path) => {
                 write!(f, "Audio file not found: {}", path)
             }
             ScxVoidError::UnsupportedAudioFormat(format) => {
-                write!(f, "Unsupported audio format: {}. Supported: M4A, AAC, MP4", format)
+                write!(
+                    f,
+                    "Unsupported audio format: {}. Supported: M4A, AAC, MP4",
+                    format
+                )
             }
             ScxVoidError::AudioDecodingError(msg) => {
                 write!(f, "Audio decoding error: {}", msg)

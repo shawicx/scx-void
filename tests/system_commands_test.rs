@@ -16,7 +16,8 @@ mod system_commands_tests {
     fn test_system_shutdown_help() -> Result<(), Box<dyn std::error::Error>> {
         let mut cmd = Command::cargo_bin("scx-void")?;
         let assert = cmd.arg("system").arg("shutdown").arg("--help").assert();
-        assert.success()
+        assert
+            .success()
             .stdout(predicates::str::contains("--timer"))
             .stdout(predicates::str::contains("关机计时器"));
 

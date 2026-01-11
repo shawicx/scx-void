@@ -1,9 +1,12 @@
-use std::path::Path;
 use crate::errors::ScxVoidError;
 use crate::utils::fs;
+use std::path::Path;
 
 /// 根据模板生成项目
-pub async fn generate_from_template(project_name: &str, template_name: &str) -> Result<(), ScxVoidError> {
+pub async fn generate_from_template(
+    project_name: &str,
+    template_name: &str,
+) -> Result<(), ScxVoidError> {
     // 定义模板路径
     let template_path = format!("assets/templates/{}", template_name);
 
@@ -13,9 +16,8 @@ pub async fn generate_from_template(project_name: &str, template_name: &str) -> 
     }
 
     // 将模板复制到项目目录
-    fs::copy_dir_all(&template_path, project_name).map_err(|e| {
-        ScxVoidError::FileSystemError(format!("复制模板失败: {}", e))
-    })?;
+    fs::copy_dir_all(&template_path, project_name)
+        .map_err(|e| ScxVoidError::FileSystemError(format!("复制模板失败: {}", e)))?;
 
     // 根据项目类型创建额外的文件
     match template_name {
@@ -37,7 +39,8 @@ async fn create_node_ts_files(project_name: &str) -> Result<(), ScxVoidError> {
     // 如果 package.json 不存在则创建
     let package_json_path = format!("{}/package.json", project_name);
     if !Path::new(&package_json_path).exists() {
-        let package_json_content = format!(r#"
+        let package_json_content = format!(
+            r#"
 {{
   "name": "{}",
   "version": "1.0.0",
@@ -56,11 +59,12 @@ async fn create_node_ts_files(project_name: &str) -> Result<(), ScxVoidError> {
     "ts-node": "^latest"
   }}
 }}
-"#, project_name);
+"#,
+            project_name
+        );
 
-        fs::write_file(&package_json_path, package_json_content).map_err(|e| {
-            ScxVoidError::FileSystemError(format!("创建 package.json 失败: {}", e))
-        })?;
+        fs::write_file(&package_json_path, package_json_content)
+            .map_err(|e| ScxVoidError::FileSystemError(format!("创建 package.json 失败: {}", e)))?;
     }
 
     // 如果 tsconfig.json 不存在则创建
@@ -96,16 +100,14 @@ async fn create_node_ts_files(project_name: &str) -> Result<(), ScxVoidError> {
     // 如果 src 目录和 index.ts 不存在则创建
     let src_dir = format!("{}/src", project_name);
     if !Path::new(&src_dir).exists() {
-        fs::create_dir(&src_dir).map_err(|e| {
-            ScxVoidError::FileSystemError(format!("创建 src 目录失败: {}", e))
-        })?;
+        fs::create_dir(&src_dir)
+            .map_err(|e| ScxVoidError::FileSystemError(format!("创建 src 目录失败: {}", e)))?;
 
         let index_ts_path = format!("{}/src/index.ts", project_name);
         let index_ts_content = r#"console.log("Hello from Node TypeScript!");"#;
 
-        fs::write_file(&index_ts_path, index_ts_content.to_string()).map_err(|e| {
-            ScxVoidError::FileSystemError(format!("创建 index.ts 失败: {}", e))
-        })?;
+        fs::write_file(&index_ts_path, index_ts_content.to_string())
+            .map_err(|e| ScxVoidError::FileSystemError(format!("创建 index.ts 失败: {}", e)))?;
     }
 
     Ok(())
