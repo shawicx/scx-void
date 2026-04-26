@@ -2,6 +2,7 @@ use std::fs::{self, File};
 use std::io::Write;
 
 /// 在指定路径创建目录
+#[allow(dead_code)]
 pub fn create_dir(path: &str) -> std::io::Result<()> {
     fs::create_dir_all(path)
 }

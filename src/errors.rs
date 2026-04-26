@@ -17,95 +17,92 @@ pub enum ScxVoidError {
     TranscriptionError(String),
     ModelDownloadError(String),
     NetworkError(String),
-    /// Git 克隆失败
-    GitCloneError(String),
-    /// 无效的 Git URL
-    InvalidGitUrl(String),
+    /// 归档文件解压失败
+    ArchiveExtractError(String),
+    /// 无效的 GitHub URL
+    InvalidGitHubUrl(String),
     /// Git 分支不存在
     GitBranchNotFound(String),
     /// 模板下载失败
     TemplateDownloadFailed(String),
     /// Git 模板 ID 不存在
     GitTemplateNotFound(String),
-    /// Git 命令未找到
-    GitNotInstalled,
 }
 
 impl std::fmt::Display for ScxVoidError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
-            ScxVoidError::GeneralError(msg) => write!(f, "Error: {}", msg),
-            ScxVoidError::InvalidProjectName(msg) => write!(f, "Invalid project name: {}", msg),
+            ScxVoidError::GeneralError(msg) => write!(f, "错误: {}", msg),
+            ScxVoidError::InvalidProjectName(msg) => write!(f, "无效的项目名称: {}", msg),
             ScxVoidError::ProjectAlreadyExists(name) => {
-                write!(f, "Project already exists: {}", name)
+                write!(f, "项目 '{}' 已存在", name)
             }
-            ScxVoidError::FileSystemError(msg) => write!(f, "File system error: {}", msg),
-            ScxVoidError::TemplateNotFound(name) => write!(f, "Template not found: {}", name),
+            ScxVoidError::FileSystemError(msg) => write!(f, "文件系统错误: {}", msg),
+            ScxVoidError::TemplateNotFound(name) => {
+                write!(f, "模板 '{}' 不存在", name)
+            }
             ScxVoidError::UnsupportedProjectType(index) => {
-                write!(f, "Unsupported project type index: {}", index)
+                write!(f, "不支持的项目类型索引: {}", index)
             }
             ScxVoidError::AiRuleFileExists(path) => {
-                write!(
-                    f,
-                    "Ai rule file already exists: {:?}. Use --force to overwrite.",
-                    path
-                )
+                write!(f, "AI 规则文件已存在: {:?}", path)
             }
-            ScxVoidError::InvalidTemplateType(template) => {
-                write!(
-                    f,
-                    "Invalid template type: {}. Available: basic, advanced",
-                    template
-                )
+            ScxVoidError::InvalidTemplateType(msg) => {
+                write!(f, "无效的模板类型: {}", msg)
             }
-            ScxVoidError::AudioFileNotFound(path) => {
-                write!(f, "Audio file not found: {}", path)
+            ScxVoidError::AudioFileNotFound(msg) => {
+                write!(f, "音频文件未找到: {}", msg)
             }
-            ScxVoidError::UnsupportedAudioFormat(format) => {
-                write!(
-                    f,
-                    "Unsupported audio format: {}. Supported: M4A, AAC, MP4",
-                    format
-                )
+            ScxVoidError::UnsupportedAudioFormat(msg) => {
+                write!(f, "不支持的音频格式: {}", msg)
             }
             ScxVoidError::AudioDecodingError(msg) => {
-                write!(f, "Audio decoding error: {}", msg)
+                write!(f, "音频解码错误: {}", msg)
             }
-            ScxVoidError::WhisperModelNotFound(path) => {
-                write!(f, "Whisper model not found: {}. Use 'scx-void audio download-model' to download a model.", path)
+            ScxVoidError::WhisperModelNotFound(msg) => {
+                write!(f, "Whisper 模型未找到: {}", msg)
             }
             ScxVoidError::WhisperLoadError(msg) => {
-                write!(f, "Failed to load Whisper model: {}", msg)
+                write!(f, "Whisper 模型加载失败: {}", msg)
             }
             ScxVoidError::TranscriptionError(msg) => {
-                write!(f, "Transcription failed: {}", msg)
+                write!(f, "转录错误: {}", msg)
             }
             ScxVoidError::ModelDownloadError(msg) => {
-                write!(f, "Model download failed: {}", msg)
+                write!(f, "模型下载错误: {}", msg)
             }
             ScxVoidError::NetworkError(msg) => {
-                write!(f, "Network error: {}", msg)
+                write!(f, "网络错误: {}", msg)
             }
-            ScxVoidError::GitCloneError(msg) => {
-                write!(f, "Git 克隆失败: {}", msg)
+            ScxVoidError::ArchiveExtractError(msg) => {
+                write!(f, "归档文件解压失败: {}", msg)
             }
-            ScxVoidError::InvalidGitUrl(url) => {
-                write!(f, "无效的 Git URL: {}", url)
+            ScxVoidError::InvalidGitHubUrl(msg) => {
+                write!(f, "无效的 GitHub URL: {}", msg)
             }
             ScxVoidError::GitBranchNotFound(branch) => {
-                write!(f, "Git 分支不存在: {}", branch)
+                write!(f, "分支 '{}' 不存在或无效", branch)
             }
             ScxVoidError::TemplateDownloadFailed(msg) => {
                 write!(f, "模板下载失败: {}", msg)
             }
             ScxVoidError::GitTemplateNotFound(id) => {
-                write!(f, "Git 模板 '{0}' 不存在", id)
-            }
-            ScxVoidError::GitNotInstalled => {
-                write!(f, "系统未安装 Git 命令")
+                write!(f, "模板 ID '{}' 不存在", id)
             }
         }
     }
 }
 
 impl std::error::Error for ScxVoidError {}
+
+impl From<reqwest::Error> for ScxVoidError {
+    fn from(err: reqwest::Error) -> Self {
+        ScxVoidError::NetworkError(err.to_string())
+    }
+}
+
+impl From<zip::result::ZipError> for ScxVoidError {
+    fn from(err: zip::result::ZipError) -> Self {
+        ScxVoidError::ArchiveExtractError(err.to_string())
+    }
+}

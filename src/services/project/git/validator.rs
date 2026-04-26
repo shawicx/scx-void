@@ -3,12 +3,10 @@ use crate::services::project::git::registry;
 use crate::services::project::git::types::GitTemplate;
 use crate::utils::git;
 
-/// 验证 Git 模板配置
+/// 验证 GitHub 模板配置
 pub fn validate_git_template(template: &GitTemplate) -> Result<(), ScxVoidError> {
-    // 验证 URL
-    if !git::validate_git_url(&template.repository_url) {
-        return Err(ScxVoidError::InvalidGitUrl(template.repository_url.clone()));
-    }
+    // 验证 URL 格式
+    git::parse_github_url(&template.repository_url)?;
 
     // 验证分支名（如果不为空）
     if !template.default_branch.is_empty() && !is_valid_branch_name(&template.default_branch) {
@@ -25,12 +23,6 @@ pub fn is_valid_branch_name(branch: &str) -> bool {
     if branch.is_empty() {
         return false;
     }
-
-    // Git 分支名规则：
-    // - 不能以 - 开头
-    // - 不能包含 .lock
-    // - 不能包含连续的 ..
-    // - 不能包含特殊字符：~ ^ : \ ? * [ 等
 
     if branch.starts_with('-') {
         return false;
@@ -67,71 +59,26 @@ pub fn validate_template_id(template_id: &str) -> Result<(), ScxVoidError> {
 #[allow(dead_code)]
 pub fn validate_template_path(path: &str) -> Result<(), ScxVoidError> {
     if path.is_empty() {
-        return Ok(()); // 空路径表示根目录，是有效的
+        return Ok(());
     }
 
-    // 检查路径格式
     if !path.starts_with('/') && !path.starts_with("./") {
-        return Err(ScxVoidError::InvalidGitUrl(format!(
+        return Err(ScxVoidError::InvalidGitHubUrl(format!(
             "无效的模板路径 '{}': 必须以 / 或 ./ 开头",
             path
         )));
     }
 
-    // 检查是否包含非法字符
     let invalid_chars = ['\\', '\0'];
     for ch in invalid_chars.iter() {
         if path.contains(*ch) {
-            return Err(ScxVoidError::InvalidGitUrl(format!(
+            return Err(ScxVoidError::InvalidGitHubUrl(format!(
                 "无效的模板路径 '{}': 包含非法字符",
                 path
             )));
         }
     }
 
-    Ok(())
-}
-
-/// 验证克隆选项
-#[allow(dead_code)]
-pub fn validate_clone_options(
-    repository_url: &str,
-    branch: Option<&str>,
-    depth: Option<u32>,
-) -> Result<(), ScxVoidError> {
-    // 验证 URL
-    if !git::validate_git_url(repository_url) {
-        return Err(ScxVoidError::InvalidGitUrl(repository_url.to_string()));
-    }
-
-    // 验证分支
-    if let Some(branch_name) = branch {
-        if !is_valid_branch_name(branch_name) {
-            return Err(ScxVoidError::GitBranchNotFound(branch_name.to_string()));
-        }
-    }
-
-    // 验证深度
-    if let Some(d) = depth {
-        if d == 0 {
-            return Err(ScxVoidError::GeneralError("克隆深度必须大于 0".to_string()));
-        }
-        if d > 1000 {
-            return Err(ScxVoidError::GeneralError(
-                "克隆深度不能超过 1000".to_string(),
-            ));
-        }
-    }
-
-    Ok(())
-}
-
-/// 检查 Git 是否安装
-#[allow(dead_code)]
-pub fn check_git_installed() -> Result<(), ScxVoidError> {
-    if !git::is_git_installed() {
-        return Err(ScxVoidError::GitNotInstalled);
-    }
     Ok(())
 }
 
@@ -161,21 +108,5 @@ mod tests {
 
         assert!(validate_template_path("invalid").is_err());
         assert!(validate_template_path("\\windows\\path").is_err());
-    }
-
-    #[test]
-    fn test_validate_clone_options() {
-        assert!(validate_clone_options("https://github.com/user/repo.git", None, None).is_ok());
-        assert!(
-            validate_clone_options("https://github.com/user/repo.git", Some("main"), Some(1))
-                .is_ok()
-        );
-
-        assert!(validate_clone_options("invalid-url", None, None).is_err());
-        assert!(
-            validate_clone_options("https://github.com/user/repo.git", Some("-invalid"), None)
-                .is_err()
-        );
-        assert!(validate_clone_options("https://github.com/user/repo.git", None, Some(0)).is_err());
     }
 }

@@ -6,15 +6,11 @@ pub enum ProjectType {
     React,
     NestJs,
     NextJs,
-    // 未来扩展:
-    // PythonFastApi,
-    // GoGin,
-    // RustActix,
 }
 
+#[allow(dead_code)]
 impl ProjectType {
     /// 获取项目类型的显示名称
-    #[allow(dead_code)]
     pub fn display_name(&self) -> String {
         match self {
             ProjectType::NodeTsCli => "Node TypeScript CLI".to_string(),
@@ -26,19 +22,18 @@ impl ProjectType {
     }
 
     /// 获取项目类型的唯一标识符
-    #[allow(dead_code)]
     pub fn identifier(&self) -> String {
         match self {
             ProjectType::NodeTsCli => "node-ts-cli".to_string(),
-            ProjectType::Vue3 => "vue3-standard".to_string(),
-            ProjectType::React => "react-modern".to_string(),
-            ProjectType::NestJs => "nestjs-rest".to_string(),
-            ProjectType::NextJs => "nextjs-app".to_string(),
+            ProjectType::Vue3 => "vue3".to_string(),
+            ProjectType::React => "react".to_string(),
+            ProjectType::NestJs => "nestjs".to_string(),
+            ProjectType::NextJs => "nextjs".to_string(),
         }
     }
 }
 
-/// Git 模板配置
+/// GitHub 模板配置
 #[derive(Debug, Clone)]
 pub struct GitTemplate {
     /// 模板唯一标识符（用于命令行参数）
@@ -51,7 +46,7 @@ pub struct GitTemplate {
     #[allow(dead_code)]
     pub description: String,
 
-    /// Git 仓库 URL
+    /// GitHub 仓库标识（owner/repo 格式）
     pub repository_url: String,
 
     /// 默认分支
@@ -99,60 +94,10 @@ impl GitTemplate {
             repository_url: repository_url.to_string(),
             default_branch: branch.unwrap_or("main").to_string(),
             template_path: template_path.unwrap_or("").to_string(),
-            project_type: ProjectType::NodeTsCli, // 默认类型
+            project_type: ProjectType::NodeTsCli,
             is_custom: true,
         }
     }
-}
-
-/// Git 克隆选项
-#[derive(Debug, Clone)]
-pub struct CloneOptions {
-    pub repository_url: String,
-    pub branch: Option<String>,
-    pub target_dir: String,
-    pub depth: Option<u32>,
-    /// 是否使用稀疏检出
-    #[allow(dead_code)]
-    pub sparse_checkout: bool,
-}
-
-impl CloneOptions {
-    pub fn new(repository_url: String, target_dir: String) -> Self {
-        Self {
-            repository_url,
-            branch: None,
-            target_dir,
-            depth: Some(1), // 默认浅克隆，只克隆最新提交
-            sparse_checkout: false,
-        }
-    }
-
-    pub fn with_branch(mut self, branch: String) -> Self {
-        self.branch = Some(branch);
-        self
-    }
-
-    pub fn with_depth(mut self, depth: u32) -> Self {
-        self.depth = Some(depth);
-        self
-    }
-
-    #[allow(dead_code)]
-    pub fn with_sparse_checkout(mut self, sparse: bool) -> Self {
-        self.sparse_checkout = sparse;
-        self
-    }
-}
-
-/// 模板源枚举
-#[derive(Debug, Clone)]
-pub enum TemplateSource {
-    /// 本地模板名称
-    #[allow(dead_code)]
-    Local(String),
-    /// Git 模板配置
-    Git(GitTemplate),
 }
 
 #[cfg(test)]
@@ -163,57 +108,39 @@ mod tests {
     fn test_project_type_display_name() {
         assert_eq!(ProjectType::NodeTsCli.display_name(), "Node TypeScript CLI");
         assert_eq!(ProjectType::Vue3.display_name(), "Vue 3");
+        assert_eq!(ProjectType::React.display_name(), "React");
     }
 
     #[test]
     fn test_project_type_identifier() {
         assert_eq!(ProjectType::NodeTsCli.identifier(), "node-ts-cli");
-        assert_eq!(ProjectType::Vue3.identifier(), "vue3-standard");
+        assert_eq!(ProjectType::Vue3.identifier(), "vue3");
     }
 
     #[test]
     fn test_git_template_predefined() {
         let template = GitTemplate::predefined(
-            "test-id",
+            "test",
             "Test Template",
             "Test Description",
-            "https://github.com/test/repo.git",
-            ProjectType::React,
+            "shawicx/test-template",
+            ProjectType::NodeTsCli,
         );
 
-        assert_eq!(template.id, "test-id");
+        assert_eq!(template.id, "test");
         assert_eq!(template.display_name, "Test Template");
-        assert_eq!(template.repository_url, "https://github.com/test/repo.git");
+        assert_eq!(template.repository_url, "shawicx/test-template");
         assert_eq!(template.default_branch, "main");
-        assert_eq!(template.is_custom, false);
+        assert!(!template.is_custom);
     }
 
     #[test]
     fn test_git_template_custom() {
-        let template = GitTemplate::custom(
-            "https://github.com/custom/repo.git",
-            Some("develop"),
-            Some("/templates/base"),
-        );
+        let template = GitTemplate::custom("user/repo", Some("develop"), Some("/src"));
 
         assert_eq!(template.id, "custom");
         assert_eq!(template.default_branch, "develop");
-        assert_eq!(template.template_path, "/templates/base");
-        assert_eq!(template.is_custom, true);
-    }
-
-    #[test]
-    fn test_clone_options_builder() {
-        let options = CloneOptions::new(
-            "https://github.com/test/repo.git".to_string(),
-            "/tmp/repo".to_string(),
-        )
-        .with_branch("main".to_string())
-        .with_depth(1);
-
-        assert_eq!(options.repository_url, "https://github.com/test/repo.git");
-        assert_eq!(options.branch, Some("main".to_string()));
-        assert_eq!(options.depth, Some(1));
-        assert_eq!(options.sparse_checkout, false);
+        assert_eq!(template.template_path, "/src");
+        assert!(template.is_custom);
     }
 }

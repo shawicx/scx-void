@@ -12,6 +12,7 @@
 |------|------|
 | `GeneralError(String)` | 通用错误 |
 | `FileSystemError(String)` | 文件系统操作失败 |
+| `NetworkError(String)` | 网络请求失败 |
 
 ### 项目相关错误
 
@@ -23,6 +24,11 @@
 | `UnsupportedProjectType` | 不支持的项目类型 |
 | `AiRuleFileExists` | AGENTS.md 已存在（未指定 `--force`） |
 | `InvalidTemplateType` | 无效的模板类型 |
+| `InvalidGitHubUrl` | 无效的 GitHub URL 格式 |
+| `ArchiveExtractError` | zip 归档解压失败 |
+| `TemplateDownloadFailed` | 模板下载失败（HTTP 错误等） |
+| `GitTemplateNotFound` | 模板 ID 不存在 |
+| `GitBranchNotFound` | Git 分支名无效 |
 
 ### 音频相关错误
 
@@ -36,16 +42,14 @@
 | `TranscriptionError` | 转写过程失败 |
 | `ModelDownloadError` | 模型下载失败 |
 
-### Git 相关错误
+### 自动错误转换
 
-| 变体 | 说明 |
-|------|------|
-| `GitCloneError` | Git 克隆失败 |
-| `InvalidGitUrl` | 无效的 Git URL |
-| `GitBranchNotFound` | Git 分支不存在 |
-| `TemplateDownloadFailed` | 模板下载失败 |
-| `GitTemplateNotFound` | Git 模板未找到 |
-| `GitNotInstalled` | Git 未安装 |
+`errors.rs` 中为外部 crate 错误实现了 `From` trait：
+
+```rust
+impl From<reqwest::Error> for ScxVoidError     // HTTP 错误 → NetworkError
+impl From<zip::result::ZipError> for ScxVoidError // zip 错误 → ArchiveExtractError
+```
 
 ## 使用规范
 
@@ -54,10 +58,9 @@
 使用 `?` 操作符进行错误传播，所有可能失败的操作返回 `Result<T, ScxVoidError>`：
 
 ```rust
-fn create_project(name: &str) -> Result<(), ScxVoidError> {
-    fs::create_dir(name).map_err(|e| {
-        ScxVoidError::FileSystemError(format!("创建项目目录失败: {}", e))
-    })?;
+fn create_project(name: &str, template: &GitTemplate) -> Result<(), ScxVoidError> {
+    let (temp_dir, source_dir) = downloader::download_template_to_temp(template, None).await?;
+    downloader::extract_template_files(&source_dir, name)?;
     Ok(())
 }
 ```
@@ -85,4 +88,4 @@ let file = fs::read_to_string(path).map_err(|e| {
 
 ---
 
-> 最后更新：2026-04-25
+> 最后更新：2026-04-26

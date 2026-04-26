@@ -48,11 +48,11 @@
 
 ### services/project — 项目管理模块
 
-对应 `src/services/project/` — 项目创建、模板、安装器、Git 模板、AI 规则
+对应 `src/services/project/` — 项目创建、GitHub 模板下载、AI 规则
 
 | 文档 | 说明 |
 |------|------|
-| [项目服务](services/project/Project-Service.md) | 创建流程、模板生成器、安装器扩展、Git 模板注册表、AI 规则管理 |
+| [项目服务](services/project/Project-Service.md) | 创建流程、GitHub 归档下载、模板注册表、AI 规则管理 |
 
 ### services/audio — 音频转写模块
 
@@ -80,7 +80,7 @@
 
 ### utils — 工具函数层
 
-对应 `src/utils/` — 文件系统、Git、Shell 工具
+对应 `src/utils/` — 文件系统、GitHub URL 解析、Shell 工具
 
 | 文档 | 说明 |
 |------|------|
@@ -88,4 +88,4 @@
 
 ---
 
-> 最后更新：2026-04-25
+> 最后更新：2026-04-26

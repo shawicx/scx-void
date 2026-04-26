@@ -14,7 +14,7 @@ scx-void <command> [subcommand] [options]
 
 ### `project init`
 
-初始化新项目，支持交互式和命令行两种模式。
+从 GitHub 模板仓库初始化新项目，支持交互式和命令行两种模式。
 
 **关联代码**：`src/cli/project.rs`
 
@@ -22,11 +22,11 @@ scx-void <command> [subcommand] [options]
 # 交互式模式（无参数时自动进入）
 scx-void project init
 
-# 命令行模式 — 本地模板
-scx-void project init --name my-project --source local --template node-ts
+# 命令行模式 — 预定义模板
+scx-void project init --template node-ts-cli --name my-project
 
-# 命令行模式 — Git 模板
-scx-void project init --name my-project --source git --template vue3-standard --branch main
+# 命令行模式 — 自定义仓库
+scx-void project init --url shawicx/scx-template-cli --branch main --name my-project
 ```
 
 **参数**：
@@ -34,17 +34,26 @@ scx-void project init --name my-project --source git --template vue3-standard --
 | 参数 | 说明 | 必填 |
 |------|------|------|
 | `--name` | 项目名称 | 命令行模式必填 |
-| `--source` | 模板来源：`local` / `git` | 命令行模式必填 |
-| `--template` | 模板标识符 | 命令行模式必填 |
-| `--branch` | Git 分支（仅 git source） | 否 |
+| `--template` | 预定义模板 ID | 与 `--url` 二选一 |
+| `--url` | 自定义 GitHub 仓库（owner/repo） | 与 `--template` 二选一 |
+| `--branch` | Git 分支（默认 main） | 否 |
+
+**预定义模板 ID**：
+
+| ID | 说明 |
+|----|------|
+| `node-ts-cli` | Node TypeScript CLI |
+| `vue3-standard` | Vue 3 + TypeScript + Vite |
+| `react-modern` | React 18 + TypeScript + Vite |
+| `nestjs-rest` | NestJS REST API |
+| `nextjs-app` | NextJS 14 + App Router + TypeScript |
 
 **交互式模式**：
 
 无参数运行时，通过 `dialoguer` 提示用户依次选择：
 1. 项目名称
-2. 模板来源（本地 / Git）
-3. 具体模板
-4. Git 分支（如选择 Git 来源）
+2. 模板列表（含"自定义仓库"选项）
+3. 分支名（选择自定义仓库时）
 
 ### `project ai-rule`
 
@@ -187,4 +196,4 @@ scx-void audio list-models
 
 ---
 
-> 最后更新：2026-04-25
+> 最后更新：2026-04-26
