@@ -31,9 +31,11 @@ pub async fn download_and_extract_archive(
 
     let pb = ProgressBar::new(total_size);
     pb.set_style(
-        ProgressStyle::with_template("{msg}\n{spinner:.green} [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})")
-            .unwrap()
-            .progress_chars("#>-"),
+        ProgressStyle::with_template(
+            "{msg}\n{spinner:.green} [{bar:40.cyan/blue}] {bytes}/{total_bytes} ({eta})",
+        )
+        .unwrap()
+        .progress_chars("#>-"),
     );
     pb.set_message(format!("下载 {}/{}", owner, repo));
 
@@ -66,9 +68,9 @@ pub async fn download_and_extract_archive(
 
     let mut archive = zip::ZipArchive::new(zip_file)?;
 
-    archive.extract(target_dir).map_err(|e| {
-        ScxVoidError::ArchiveExtractError(format!("解压归档文件失败: {}", e))
-    })?;
+    archive
+        .extract(target_dir)
+        .map_err(|e| ScxVoidError::ArchiveExtractError(format!("解压归档文件失败: {}", e)))?;
 
     // GitHub 归档解压后的顶层目录格式为 {repo}-{branch}
     let extracted_dir = target_dir.join(format!("{}-{}", repo, branch));

@@ -27,6 +27,16 @@ pub enum ScxVoidError {
     TemplateDownloadFailed(String),
     /// Git 模板 ID 不存在
     GitTemplateNotFound(String),
+    /// 安装失败
+    InstallationFailed {
+        component: String,
+        reason: String,
+    },
+    /// Shell 配置写入失败
+    ShellConfigError {
+        path: String,
+        reason: String,
+    },
 }
 
 impl std::fmt::Display for ScxVoidError {
@@ -88,6 +98,12 @@ impl std::fmt::Display for ScxVoidError {
             }
             ScxVoidError::GitTemplateNotFound(id) => {
                 write!(f, "模板 ID '{}' 不存在", id)
+            }
+            ScxVoidError::InstallationFailed { component, reason } => {
+                write!(f, "安装 '{}' 失败: {}", component, reason)
+            }
+            ScxVoidError::ShellConfigError { path, reason } => {
+                write!(f, "Shell 配置文件 '{}' 写入失败: {}", path, reason)
             }
         }
     }

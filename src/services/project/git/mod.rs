@@ -10,4 +10,6 @@ pub use registry::{get_all_templates, get_template_by_id, get_template_map, temp
 #[allow(unused_imports)]
 pub use types::{GitTemplate, ProjectType};
 #[allow(unused_imports)]
-pub use validator::{is_valid_branch_name, validate_git_template, validate_template_id, validate_template_path};
+pub use validator::{
+    is_valid_branch_name, validate_git_template, validate_template_id, validate_template_path,
+};

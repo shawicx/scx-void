@@ -27,6 +27,11 @@ enum Commands {
         #[command(subcommand)]
         command: cli::SystemCommands,
     },
+    /// 环境安装命令
+    Setup {
+        #[command(subcommand)]
+        command: cli::SetupCommands,
+    },
     #[cfg(feature = "audio")]
     /// 音频转录相关命令
     Audio {
@@ -45,6 +50,12 @@ async fn main() {
         }
         Commands::System { command } => {
             if let Err(e) = cli::SystemCommands::run(command).await {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Setup { command } => {
+            if let Err(e) = cli::SetupCommands::run(command).await {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }

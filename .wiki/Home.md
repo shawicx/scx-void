@@ -44,7 +44,7 @@
 
 | 文档 | 说明 |
 |------|------|
-| [CLI 命令参考](cli/CLI-Reference.md) | `project` / `system` / `audio` 全部命令、参数和用法 |
+| [CLI 命令参考](cli/CLI-Reference.md) | `project` / `system` / `setup` / `audio` 全部命令、参数和用法 |
 
 ### services/project — 项目管理模块
 
@@ -70,6 +70,14 @@
 |------|------|
 | [系统服务](services/system/System-Service.md) | ShutdownService 和平台命令映射 |
 
+### services/setup — 环境安装模块
+
+对应 `src/services/setup/` — 前端开发环境安装
+
+| 文档 | 说明 |
+|------|------|
+| [环境安装服务](services/setup/Setup-Service.md) | Installer trait、9 个组件安装策略、ShellConfig 工具 |
+
 ### platform — 平台抽象层
 
 对应 `src/platform/` — SystemOps trait 和编译时平台选择
@@ -88,4 +96,4 @@
 
 ---
 
-> 最后更新：2026-04-26
+> 最后更新：2026-04-28

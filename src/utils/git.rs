@@ -91,7 +91,9 @@ mod tests {
     #[test]
     fn test_validate_git_url() {
         assert!(validate_git_url("shawicx/template-node-ts-cli"));
-        assert!(validate_git_url("https://github.com/shawicx/template-node-ts-cli"));
+        assert!(validate_git_url(
+            "https://github.com/shawicx/template-node-ts-cli"
+        ));
         assert!(!validate_git_url(""));
         assert!(!validate_git_url("invalid"));
     }
