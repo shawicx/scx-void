@@ -32,6 +32,23 @@ enum Commands {
         #[command(subcommand)]
         command: cli::SetupCommands,
     },
+    /// 文件格式转换
+    Convert {
+        /// 输入文件路径。未提供时交互式提示输入
+        file: Option<String>,
+
+        /// 目标格式（如 png）。未提供时交互式选择
+        #[arg(short, long)]
+        format: Option<String>,
+
+        /// 输出文件路径。未提供则同目录同名换后缀
+        #[arg(short, long)]
+        output: Option<String>,
+
+        /// 允许覆盖已存在的输出文件
+        #[arg(long)]
+        overwrite: bool,
+    },
     #[cfg(feature = "audio")]
     /// 音频转录相关命令
     Audio {
@@ -56,6 +73,17 @@ async fn main() {
         }
         Commands::Setup { command } => {
             if let Err(e) = cli::SetupCommands::run(command).await {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Convert {
+            file,
+            format,
+            output,
+            overwrite,
+        } => {
+            if let Err(e) = cli::run_convert(file, format, output, overwrite).await {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }

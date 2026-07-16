@@ -119,6 +119,35 @@ scx-void system shutdown -t 60
 |------|------|------|
 | `--timer` | `-t` | 延迟秒数（默认：0） |
 
+### `convert` — 转换文件格式
+
+交互式检测文件格式并转换，当前支持 HEIC → PNG。
+
+```bash
+# 交互式：输入路径并选择目标格式
+scx-void convert
+
+# 直接转换
+scx-void convert photo.heic -f png
+
+# 指定输出路径
+scx-void convert photo.heic -f png -o /tmp/photo.png
+
+# 覆盖已存在的输出文件
+scx-void convert photo.heic -f png --overwrite
+```
+
+**参数：**
+
+| 参数 | 缩写 | 说明 |
+|------|------|------|
+| `<file>` | - | 输入文件路径（可选，缺省交互输入） |
+| `--format` | `-f` | 目标格式（如 `png`，可选） |
+| `--output` | `-o` | 输出路径（可选，默认同目录同名换后缀） |
+| `--overwrite` | - | 覆盖已存在的输出文件 |
+
+**依赖：** macOS 使用系统自带 `sips`；Linux/Windows 需安装 ImageMagick（`magick` 命令）。
+
 ### `audio` — 音频转录（需启用 audio feature）
 
 ```bash

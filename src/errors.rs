@@ -37,6 +37,19 @@ pub enum ScxVoidError {
         path: String,
         reason: String,
     },
+    /// 不支持的图像格式（无法识别，或扩展名与内容不符）
+    UnsupportedImageFormat(String),
+    /// 图像转换失败
+    ImageConversionFailed {
+        source: String,
+        target: String,
+        reason: String,
+    },
+    /// 系统未安装所需的转换工具
+    ConverterNotFound {
+        tool: String,
+        hint: String,
+    },
 }
 
 impl std::fmt::Display for ScxVoidError {
@@ -104,6 +117,15 @@ impl std::fmt::Display for ScxVoidError {
             }
             ScxVoidError::ShellConfigError { path, reason } => {
                 write!(f, "Shell 配置文件 '{}' 写入失败: {}", path, reason)
+            }
+            ScxVoidError::UnsupportedImageFormat(msg) => {
+                write!(f, "不支持的图像格式: {}", msg)
+            }
+            ScxVoidError::ImageConversionFailed { source, target, reason } => {
+                write!(f, "从 {} 转换到 {} 失败: {}", source, target, reason)
+            }
+            ScxVoidError::ConverterNotFound { tool, hint } => {
+                write!(f, "未找到转换工具 '{}': {}", tool, hint)
             }
         }
     }
