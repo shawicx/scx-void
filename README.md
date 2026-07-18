@@ -148,6 +148,37 @@ scx-void convert photo.heic -f png --overwrite
 
 **依赖：** macOS 使用系统自带 `sips`；Linux/Windows 需安装 ImageMagick（`magick` 命令）。
 
+### `compress` — 图片压缩为 WebP
+
+将 JPEG/PNG/WebP 图片压缩为 WebP 格式，支持质量预设与体积对比。
+
+```bash
+# 交互式：输入路径并选择质量档位
+scx-void compress
+
+# 直接指定质量压缩
+scx-void compress photo.jpg -q 75
+
+# 指定输出路径
+scx-void compress photo.png -q 85 -o /tmp/photo.webp
+
+# 覆盖已存在的输出文件
+scx-void compress photo.jpg -q 75 --overwrite
+```
+
+**参数：**
+
+| 参数 | 缩写 | 说明 |
+|------|------|------|
+| `<file>` | - | 输入文件路径（可选，缺省交互输入） |
+| `--quality` | `-q` | 压缩质量 1-100（可选，缺省交互选 high/medium/low） |
+| `--output` | `-o` | 输出路径（可选，默认同目录同名换 `.webp`） |
+| `--overwrite` | - | 覆盖已存在的输出文件 |
+
+**质量预设：** `high (85)` / `medium (75)` / `low (60)`，交互式选择时展示。
+
+**依赖：** 需安装 libwebp（提供 `cwebp` 命令）：macOS `brew install webp`，Linux `sudo apt install webp`，Windows `winget install Google.WebP`。
+
 ### `audio` — 音频转录（需启用 audio feature）
 
 ```bash

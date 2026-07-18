@@ -50,6 +50,18 @@ pub enum ScxVoidError {
         tool: String,
         hint: String,
     },
+    /// 不支持的压缩格式（非 JPEG/PNG/WebP，或扩展名与内容不符）
+    UnsupportedCompressFormat(String),
+    /// 图片压缩失败
+    CompressionFailed {
+        source: String,
+        reason: String,
+    },
+    /// 系统未安装压缩工具
+    CompressorNotFound {
+        tool: String,
+        hint: String,
+    },
 }
 
 impl std::fmt::Display for ScxVoidError {
@@ -126,6 +138,15 @@ impl std::fmt::Display for ScxVoidError {
             }
             ScxVoidError::ConverterNotFound { tool, hint } => {
                 write!(f, "未找到转换工具 '{}': {}", tool, hint)
+            }
+            ScxVoidError::UnsupportedCompressFormat(msg) => {
+                write!(f, "不支持的压缩格式: {}", msg)
+            }
+            ScxVoidError::CompressionFailed { source, reason } => {
+                write!(f, "压缩 '{}' 失败: {}", source, reason)
+            }
+            ScxVoidError::CompressorNotFound { tool, hint } => {
+                write!(f, "未找到压缩工具 '{}': {}", tool, hint)
             }
         }
     }

@@ -49,6 +49,23 @@ enum Commands {
         #[arg(long)]
         overwrite: bool,
     },
+    /// 图片压缩为 WebP
+    Compress {
+        /// 输入文件路径。未提供时交互式提示输入
+        file: Option<String>,
+
+        /// 压缩质量 1-100。未提供时交互式选择预设
+        #[arg(short, long)]
+        quality: Option<u8>,
+
+        /// 输出文件路径。未提供则同目录同名换 .webp
+        #[arg(short, long)]
+        output: Option<String>,
+
+        /// 允许覆盖已存在的输出文件
+        #[arg(long)]
+        overwrite: bool,
+    },
     #[cfg(feature = "audio")]
     /// 音频转录相关命令
     Audio {
@@ -84,6 +101,17 @@ async fn main() {
             overwrite,
         } => {
             if let Err(e) = cli::run_convert(file, format, output, overwrite).await {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Compress {
+            file,
+            quality,
+            output,
+            overwrite,
+        } => {
+            if let Err(e) = cli::run_compress(file, quality, output, overwrite).await {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
