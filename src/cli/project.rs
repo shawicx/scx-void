@@ -28,17 +28,13 @@ pub enum ProjectCommands {
     },
     /// 生成或更新 AGENTS.md 文件
     AiRule {
-        /// 模板类型 (basic, advanced)
-        #[arg(short, long, default_value = "advanced")]
-        template: String,
+        /// 技术栈类型 (vue3/react/nextjs/node-cli/nestjs/tauri/java)
+        #[arg(short, long)]
+        r#type: Option<String>,
 
         /// 强制覆盖现有文件
         #[arg(short, long)]
         force: bool,
-
-        /// 交互式配置
-        #[arg(short, long)]
-        interactive: bool,
     },
 }
 
@@ -56,12 +52,8 @@ impl ProjectCommands {
             ProjectCommands::Add { stack_type } => {
                 add_to_project(stack_type).await;
             }
-            ProjectCommands::AiRule {
-                template,
-                force,
-                interactive,
-            } => {
-                manage_ai_rule(template, force, interactive).await;
+            ProjectCommands::AiRule { r#type, force } => {
+                manage_ai_rule(r#type, force).await;
             }
         }
     }
@@ -111,7 +103,19 @@ async fn handle_command_mode(
     match crate::services::project::create_project(&project_name, &git_template, branch.as_deref())
         .await
     {
-        Ok(_) => println!("项目'{}'创建成功!", project_name),
+        Ok(_) => {
+            println!("项目'{}'创建成功!", project_name);
+
+            // 按模板的 project_type 生成 AGENTS.md 到新项目目录（不阻断主流程）
+            let agents_path = std::path::Path::new(&project_name).join("AGENTS.md");
+            let service = crate::services::project::ai_rule::AiRuleService::new();
+            if let Err(e) = service
+                .manage_rule_file(git_template.project_type, &agents_path)
+                .await
+            {
+                eprintln!("警告：AGENTS.md 生成失败: {}", e);
+            }
+        }
         Err(e) => {
             eprintln!("创建项目时出错: {}", e);
             std::process::exit(1);
@@ -164,7 +168,19 @@ async fn handle_interactive_mode(project_name: String) {
     match crate::services::project::create_project(&project_name, &git_template, branch.as_deref())
         .await
     {
-        Ok(_) => println!("项目'{}'创建成功!", project_name),
+        Ok(_) => {
+            println!("项目'{}'创建成功!", project_name);
+
+            // 按模板的 project_type 生成 AGENTS.md 到新项目目录（不阻断主流程）
+            let agents_path = std::path::Path::new(&project_name).join("AGENTS.md");
+            let service = crate::services::project::ai_rule::AiRuleService::new();
+            if let Err(e) = service
+                .manage_rule_file(git_template.project_type, &agents_path)
+                .await
+            {
+                eprintln!("警告：AGENTS.md 生成失败: {}", e);
+            }
+        }
         Err(e) => {
             eprintln!("创建项目时出错: {}", e);
             std::process::exit(1);
@@ -177,27 +193,57 @@ async fn add_to_project(stack_type: String) {
     println!("添加{}功能尚未实现。", stack_type);
 }
 
-async fn manage_ai_rule(template: String, force: bool, interactive: bool) {
+async fn manage_ai_rule(type_id: Option<String>, force: bool) {
+    use crate::services::project::git::types::ProjectType;
+
     println!("正在管理 Ai Code 规则文件...");
 
-    let final_template = if interactive {
-        let templates = ["advanced", "basic"];
-        let selection = Select::new()
-            .with_prompt("选择模板类型")
-            .items(&templates)
-            .default(0)
-            .interact()
-            .unwrap();
-        templates[selection].to_string()
-    } else {
-        template
+    let project_type = match type_id {
+        Some(id) => match ProjectType::from_ai_rule_id(&id) {
+            Some(pt) => pt,
+            None => {
+                eprintln!(
+                    "错误：未知的技术栈类型 '{}'\n可用类型：vue3, react, nextjs, node-cli, nestjs, tauri, java",
+                    id
+                );
+                std::process::exit(1);
+            }
+        },
+        None => prompt_stack_selection(),
     };
 
-    match crate::services::project::ai_rule::manage_ai_rule_file(&final_template, force).await {
+    match crate::services::project::ai_rule::manage_ai_rule_file(project_type, force).await {
         Ok(_) => println!("Ai Code 规则文件处理成功!"),
         Err(e) => {
             eprintln!("处理 Ai Code 规则文件时出错: {}", e);
             std::process::exit(1);
         }
     }
+}
+
+fn prompt_stack_selection() -> crate::services::project::git::types::ProjectType {
+    use crate::services::project::git::types::ProjectType;
+
+    let stacks = [
+        ("vue3", "Vue 3 + TypeScript + Vite"),
+        ("react", "React 18 + TypeScript + Vite"),
+        ("nextjs", "NextJS 14 + App Router + TypeScript"),
+        ("node-cli", "Node.js + TypeScript CLI"),
+        ("nestjs", "NestJS RESTful API"),
+        ("tauri", "Tauri 桌面应用 (Rust + 前端)"),
+        ("java", "Java (Maven/Gradle/Spring)"),
+    ];
+    let items: Vec<String> = stacks
+        .iter()
+        .map(|(id, desc)| format!("{} - {}", id, desc))
+        .collect();
+
+    let selection = Select::new()
+        .with_prompt("选择技术栈")
+        .items(&items)
+        .default(0)
+        .interact()
+        .unwrap();
+
+    ProjectType::from_ai_rule_id(stacks[selection].0).unwrap()
 }

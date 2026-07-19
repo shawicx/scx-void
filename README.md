@@ -59,29 +59,43 @@ scx-void project init -t node-ts-cli -b v1.0
 
 ### `project ai-rule` — 管理AI编码规则
 
-生成 AI 代码规则文件（AGENTS.md）。
+按技术栈生成 AI 代码规则文件（AGENTS.md），内容包含通用规则 + 该技术栈的目录结构、包管理器、构建命令、依赖管理最佳实践。
 
 ```bash
-# 使用高级模板生成
+# 交互式选择技术栈
 scx-void project ai-rule
 
-# 使用基础模板
-scx-void project ai-rule -t basic
+# 直接指定技术栈
+scx-void project ai-rule -t vue3
+scx-void project ai-rule -t react
+scx-void project ai-rule -t tauri
 
-# 强制覆盖已有文件
-scx-void project ai-rule -f
-
-# 交互式配置
-scx-void project ai-rule -i
+# 强制覆盖已有文件（自动备份为 AGENTS.md.backup）
+scx-void project ai-rule -t vue3 -f
 ```
 
 **参数：**
 
 | 参数 | 缩写 | 说明 |
 |------|------|------|
-| `--template` | `-t` | 模板类型：`basic` / `advanced`（默认：`advanced`） |
-| `--force` | `-f` | 强制覆盖已有文件 |
-| `--interactive` | `-i` | 交互式配置模式 |
+| `--type` | `-t` | 技术栈 ID（见下表，缺省时交互式选择） |
+| `--force` | `-f` | 强制覆盖已有文件，原文件备份为 `.backup` |
+
+**支持的技术栈：**
+
+| ID | 名称 | 适用场景 |
+|----|------|---------|
+| `vue3` | Vue 3 | Vue 3 + TypeScript + Vite |
+| `react` | React | React 18 + TypeScript + Vite |
+| `nextjs` | NextJS | NextJS 14 + App Router |
+| `node-cli` | Node CLI | Node.js + TypeScript CLI（ESM） |
+| `nestjs` | NestJS | NestJS RESTful API |
+| `tauri` | Tauri | Rust + 前端桌面应用 |
+| `java` | Java | Maven / Gradle / Spring |
+
+> 前端相关栈（vue3 / react / nextjs / node-cli / nestjs）统一要求 `pnpm` + Node 22+。
+>
+> `project init` 创建新项目时，会按所选模板自动生成对应的 AGENTS.md。
 
 ### `setup frontend` — 搭建前端开发环境
 

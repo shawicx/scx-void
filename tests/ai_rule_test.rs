@@ -1,138 +1,115 @@
 use assert_cmd::Command;
 use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
+use tempfile::TempDir;
 
-/// 创建命令
-#[allow(deprecated)]
 fn create_cmd() -> Command {
     Command::cargo_bin("scx-void").unwrap()
 }
 
+/// 为每个测试创建独立的临时目录，避免并行测试互相污染进程级 CWD
+/// （Rust 默认多线程跑测试，set_current_dir 是进程全局状态）
+fn make_tempdir() -> TempDir {
+    TempDir::new().unwrap()
+}
+
 #[test]
-fn test_ai_rule_basic_template() {
-    // 清理测试环境
-    cleanup_test_files();
+fn test_ai_rule_vue3_generates_file() {
+    let tmp = make_tempdir();
 
     let mut cmd = create_cmd();
-    cmd.args(&["project", "ai-rule", "--template", "basic"]);
+    cmd.current_dir(tmp.path());
+    cmd.args(["project", "ai-rule", "-t", "vue3"]);
+    cmd.assert().success();
 
-    let assert = cmd.assert();
-    assert.success();
+    let agents = tmp.path().join("AGENTS.md");
+    assert!(agents.exists());
 
-    // 检查文件是否生成
-    assert!(std::path::Path::new("AGENTS.md").exists());
-
-    // 检查文件内容
-    let content = fs::read_to_string("AGENTS.md").unwrap();
-    assert!(content.contains("AI Code Agent - Basic Project Rules"));
+    let content = fs::read_to_string(&agents).unwrap();
+    // base 段
     assert!(content.contains("核心原则"));
-
-    cleanup_test_files();
+    // Vue3 段
+    assert!(content.contains("Vue 3 项目规则"));
+    assert!(content.contains("pnpm"));
+    assert!(content.contains("22+")); // Node.js 版本要求 22+
 }
 
 #[test]
-fn test_ai_rule_advanced_template() {
-    // 清理测试环境
-    cleanup_test_files();
+fn test_ai_rule_unknown_stack_fails() {
+    let tmp = make_tempdir();
 
     let mut cmd = create_cmd();
-    cmd.args(&["project", "ai-rule", "--template", "advanced"]);
-
-    let assert = cmd.assert();
-    assert.success();
-
-    // 检查文件是否生成
-    assert!(std::path::Path::new("AGENTS.md").exists());
-
-    // 检查文件内容
-    let content = fs::read_to_string("AGENTS.md").unwrap();
-    assert!(content.contains("AI Code Agent - Multi-Project CLI Rules"));
-    assert!(content.contains("禁止事项"));
-    assert!(content.contains("兼容性要求"));
-
-    cleanup_test_files();
-}
-
-#[test]
-fn test_ai_rule_force_overwrite() {
-    // 清理测试环境
-    cleanup_test_files();
-
-    // 首先创建一个文件
-    fs::write("AGENTS.md", "# Existing content").unwrap();
-
-    // 尝试不使用 force 覆盖
-    let mut cmd = create_cmd();
-    cmd.args(&["project", "ai-rule", "--template", "basic"]);
-
+    cmd.current_dir(tmp.path());
+    cmd.args(["project", "ai-rule", "-t", "foo"]);
     let output = cmd.output().unwrap();
+
     assert!(!output.status.success());
     let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("already exists"));
-
-    // 使用 force 覆盖
-    let mut cmd = create_cmd();
-    cmd.args(&["project", "ai-rule", "--template", "basic", "--force"]);
-
-    let assert = cmd.assert();
-    assert.success();
-
-    // 检查内容是否被覆盖
-    let content = fs::read_to_string("AGENTS.md").unwrap();
-    assert!(content.contains("AI Code Agent - Basic Project Rules"));
-    assert!(!content.contains("Existing content"));
-
-    cleanup_test_files();
+    assert!(stderr.contains("未知的技术栈类型"));
 }
 
 #[test]
-fn test_ai_rule_invalid_template() {
-    // 清理测试环境
-    cleanup_test_files();
+fn test_ai_rule_force_overwrites_existing_file() {
+    let tmp = make_tempdir();
+    let agents = tmp.path().join("AGENTS.md");
 
+    // 先放一个已有的 AGENTS.md
+    fs::write(&agents, "# Old content").unwrap();
+
+    // 不带 -f 应当失败
     let mut cmd = create_cmd();
-    cmd.args(&["project", "ai-rule", "--template", "invalid"]);
-
+    cmd.current_dir(tmp.path());
+    cmd.args(["project", "ai-rule", "-t", "vue3"]);
     let output = cmd.output().unwrap();
     assert!(!output.status.success());
-    let stderr = String::from_utf8_lossy(&output.stderr);
-    assert!(stderr.contains("Invalid template type"));
 
-    cleanup_test_files();
+    // 带 -f 应当成功，并创建备份
+    let mut cmd = create_cmd();
+    cmd.current_dir(tmp.path());
+    cmd.args(["project", "ai-rule", "-t", "vue3", "-f"]);
+    cmd.assert().success();
+
+    let content = fs::read_to_string(&agents).unwrap();
+    assert!(content.contains("Vue 3 项目规则"));
+    assert!(!content.contains("Old content"));
+
+    // 备份文件保留原始内容
+    let backup = tmp.path().join("AGENTS.md.backup");
+    assert!(backup.exists());
+    assert_eq!(fs::read_to_string(&backup).unwrap(), "# Old content");
 }
 
 #[test]
-fn test_ai_rule_backup_functionality() {
-    // 清理测试环境
-    cleanup_test_files();
+fn test_ai_rule_legacy_template_rejected() {
+    let tmp = make_tempdir();
 
-    // 首先创建一个文件
-    fs::write("AGENTS.md", "# Original content").unwrap();
-
-    // 使用 force 覆盖（应该创建备份）
-    let mut cmd = create_cmd();
-    cmd.args(&["project", "ai-rule", "--template", "basic", "--force"]);
-
-    let assert = cmd.assert();
-    assert.success();
-
-    // 检查备份文件是否创建
-    assert!(Path::new("AGENTS.md.backup").exists());
-
-    // 检查备份文件内容
-    let backup_content = fs::read_to_string("AGENTS.md.backup").unwrap();
-    assert_eq!(backup_content, "# Original content");
-
-    cleanup_test_files();
+    // 旧的 -t basic / -t advanced 必须报错
+    for legacy in &["basic", "advanced"] {
+        let mut cmd = create_cmd();
+        cmd.current_dir(tmp.path());
+        cmd.args(["project", "ai-rule", "-t", legacy]);
+        let output = cmd.output().unwrap();
+        assert!(!output.status.success(), "-t {} 应当被拒绝", legacy);
+    }
 }
 
-fn cleanup_test_files() {
-    // let files_to_remove = ["AGENTS.md", "AGENTS.md.backup"];
+#[test]
+fn test_ai_rule_all_stacks_generate() {
+    let stacks = [
+        "vue3", "react", "nextjs", "node-cli", "nestjs", "tauri", "java",
+    ];
 
-    // for file in &files_to_remove {
-    //     if Path::new(file).exists() {
-    //         let _ = fs::remove_file(file);
-    //     }
-    // }
-    print!("删除文件已通过，不测试")
+    for stack in &stacks {
+        let tmp = make_tempdir();
+
+        let mut cmd = create_cmd();
+        cmd.current_dir(tmp.path());
+        cmd.args(["project", "ai-rule", "-t", stack]);
+        cmd.assert().success();
+
+        let agents: PathBuf = tmp.path().join("AGENTS.md");
+        assert!(agents.exists(), "stack={} 未生成文件", stack);
+        let content = fs::read_to_string(&agents).unwrap();
+        assert!(content.contains("核心原则"), "stack={} 缺少 base 段", stack);
+    }
 }

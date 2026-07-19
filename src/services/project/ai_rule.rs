@@ -1,4 +1,5 @@
 use crate::errors::ScxVoidError;
+use crate::services::project::git::types::ProjectType;
 use crate::utils::fs;
 use std::path::Path;
 
@@ -11,75 +12,63 @@ impl AiRuleService {
         Self
     }
 
-    /// 管理 Ai Code 规则文件
-    /// template_type: 模板类型 ("basic" 或 "advanced")
-    /// force: 是否强制覆盖现有文件
+    /// 渲染规则内容（纯函数，与文件系统无关）
+    /// 由 base 通用段 + 技术栈专属段拼装
+    pub fn render(&self, project_type: ProjectType) -> Result<String, ScxVoidError> {
+        let base = include_str!("../../../assets/templates/ai_rule/base.md");
+        let stack = match project_type {
+            ProjectType::Vue3 => include_str!("../../../assets/templates/ai_rule/vue3.md"),
+            ProjectType::React => include_str!("../../../assets/templates/ai_rule/react.md"),
+            ProjectType::NextJs => include_str!("../../../assets/templates/ai_rule/nextjs.md"),
+            ProjectType::NodeTsCli => {
+                include_str!("../../../assets/templates/ai_rule/node-cli.md")
+            }
+            ProjectType::NestJs => include_str!("../../../assets/templates/ai_rule/nestjs.md"),
+            ProjectType::Tauri => include_str!("../../../assets/templates/ai_rule/tauri.md"),
+            ProjectType::Java => include_str!("../../../assets/templates/ai_rule/java.md"),
+        };
+        Ok(format!("{}\n\n---\n\n{}", base, stack))
+    }
+
+    /// 写入规则文件到指定路径（只负责渲染+写入，不做存在性/备份判断）
     pub async fn manage_rule_file(
         &self,
-        template_type: &str,
-        force: bool,
+        project_type: ProjectType,
+        target_path: &Path,
     ) -> Result<(), ScxVoidError> {
-        let rule_file_path = "AGENTS.md";
+        let content = self.render(project_type)?;
+        let path_str = target_path
+            .to_str()
+            .ok_or_else(|| ScxVoidError::FileSystemError("目标路径包含非法字符".into()))?;
 
-        // 先验证模板类型
-        let content = self.get_template_content(template_type)?;
-
-        // 检查文件是否已存在
-        if Path::new(rule_file_path).exists() && !force {
-            return Err(ScxVoidError::AiRuleFileExists(rule_file_path.into()));
-        }
-
-        // 写入文件
-        fs::write_file(rule_file_path, content.clone())
+        fs::write_file(path_str, content)
             .map_err(|e| ScxVoidError::FileSystemError(e.to_string()))?;
 
-        println!("✓ Ai Code 规则文件已生成: {}", rule_file_path);
-
+        println!("✓ Ai Code 规则文件已生成: {}", target_path.display());
         Ok(())
     }
 
-    /// 根据模板类型获取内容
-    fn get_template_content(&self, template_type: &str) -> Result<String, ScxVoidError> {
-        match template_type {
-            "advanced" => Ok(self.get_advanced_template()),
-            "basic" => Ok(self.get_basic_template()),
-            _ => Err(ScxVoidError::InvalidTemplateType(template_type.to_string())),
-        }
+    /// 验证指定路径的规则文件是否存在
+    #[allow(dead_code)]
+    pub fn validate_existing_file(&self, path: &Path) -> Result<bool, ScxVoidError> {
+        Ok(path.exists())
     }
 
-    /// 获取高级模板内容
-    fn get_advanced_template(&self) -> String {
-        include_str!("../../../assets/templates/ai_rule/advanced.md").to_string()
-    }
-
-    /// 获取基础模板内容
-    fn get_basic_template(&self) -> String {
-        include_str!("../../../assets/templates/ai_rule/basic.md").to_string()
-    }
-
-    /// 验证现有规则文件状态
-    pub fn validate_existing_file(&self) -> Result<bool, ScxVoidError> {
-        let rule_file_path = "AGENTS.md";
-
-        if !Path::new(rule_file_path).exists() {
-            return Ok(false);
+    /// 备份指定路径的规则文件（追加 .backup 后缀）
+    pub async fn backup_existing_file(&self, path: &Path) -> Result<(), ScxVoidError> {
+        if !path.exists() {
+            return Ok(());
         }
 
-        // 可以添加更多验证逻辑，比如检查文件格式等
-        Ok(true)
-    }
+        let src = path
+            .to_str()
+            .ok_or_else(|| ScxVoidError::FileSystemError("源路径包含非法字符".into()))?;
+        let backup_path = format!("{}.backup", src);
 
-    /// 备份现有规则文件
-    pub async fn backup_existing_file(&self) -> Result<(), ScxVoidError> {
-        let rule_file_path = "AGENTS.md";
-        let backup_path = "AGENTS.md.backup";
+        fs::copy_file(src, &backup_path)
+            .map_err(|e| ScxVoidError::FileSystemError(e.to_string()))?;
 
-        if Path::new(rule_file_path).exists() {
-            fs::copy_file(rule_file_path, backup_path)
-                .map_err(|e| ScxVoidError::FileSystemError(e.to_string()))?;
-            println!("✓ 现有规则文件已备份: {}", backup_path);
-        }
-
+        println!("✓ 现有规则文件已备份: {}", backup_path);
         Ok(())
     }
 }
@@ -90,19 +79,93 @@ impl Default for AiRuleService {
     }
 }
 
-/// 公共接口函数，供 CLI 层调用
-pub async fn manage_ai_rule_file(template_type: &str, force: bool) -> Result<(), ScxVoidError> {
+/// CLI 入口：默认写入当前目录的 AGENTS.md
+/// 职责：存在性检查 + 备份 + 调用底层写入
+pub async fn manage_ai_rule_file(
+    project_type: ProjectType,
+    force: bool,
+) -> Result<(), ScxVoidError> {
     let service = AiRuleService::new();
+    let path = Path::new("AGENTS.md");
 
-    // 如果不强制覆盖，先检查现有文件
-    if !force && service.validate_existing_file()? {
-        return Err(ScxVoidError::AiRuleFileExists("AGENTS.md".into()));
+    // 不强制覆盖时，先检查文件是否已存在
+    if !force && path.exists() {
+        return Err(ScxVoidError::AiRuleFileExists(path.to_path_buf()));
     }
 
-    // 如果使用 force 并且文件已存在，先创建备份
-    if force && Path::new("AGENTS.md").exists() {
-        service.backup_existing_file().await?;
+    // 强制覆盖且文件已存在时，先备份
+    if force && path.exists() {
+        service.backup_existing_file(path).await?;
     }
 
-    service.manage_rule_file(template_type, force).await
+    service.manage_rule_file(project_type, path).await
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_render_combines_base_and_stack() {
+        let service = AiRuleService::new();
+        let content = service.render(ProjectType::Vue3).unwrap();
+
+        // 必须包含 base 段的核心标题
+        assert!(content.contains("核心原则"));
+        assert!(content.contains("依赖管理"));
+        assert!(content.contains("禁止事项"));
+
+        // 必须包含 Vue3 段的标题
+        assert!(content.contains("Vue 3 项目规则"));
+        assert!(content.contains("Vue Router"));
+        assert!(content.contains("Pinia"));
+    }
+
+    #[test]
+    fn test_render_each_stack() {
+        let service = AiRuleService::new();
+        let stacks = [
+            ProjectType::Vue3,
+            ProjectType::React,
+            ProjectType::NextJs,
+            ProjectType::NodeTsCli,
+            ProjectType::NestJs,
+            ProjectType::Tauri,
+            ProjectType::Java,
+        ];
+
+        for stack in stacks {
+            let content = service.render(stack);
+            assert!(content.is_ok(), "render({:?}) 失败", stack);
+            let content = content.unwrap();
+            assert!(!content.is_empty());
+            // base 段必须出现在所有技术栈输出中
+            assert!(content.contains("核心原则"));
+        }
+    }
+
+    #[test]
+    fn test_render_separator() {
+        let service = AiRuleService::new();
+        let content = service.render(ProjectType::React).unwrap();
+        // base 与 stack 之间必须用分隔符拼接
+        assert!(content.contains("\n\n---\n\n"));
+    }
+
+    #[test]
+    fn test_render_stack_specific_content() {
+        let service = AiRuleService::new();
+
+        // Tauri 必须提到 security 字段
+        let tauri = service.render(ProjectType::Tauri).unwrap();
+        assert!(tauri.contains("security") || tauri.contains("capabilities"));
+
+        // Java 必须提到 Maven 或 Gradle
+        let java = service.render(ProjectType::Java).unwrap();
+        assert!(java.contains("Maven") || java.contains("Gradle"));
+
+        // node-cli 必须提到 ESM
+        let cli = service.render(ProjectType::NodeTsCli).unwrap();
+        assert!(cli.contains("ESM"));
+    }
 }

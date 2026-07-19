@@ -8,7 +8,8 @@ pub enum ScxVoidError {
     TemplateNotFound(String),
     UnsupportedProjectType(usize),
     AiRuleFileExists(std::path::PathBuf),
-    InvalidTemplateType(String),
+    /// 未知的技术栈类型（ai-rule 命令的 -t 参数）
+    UnknownStackType(String),
     AudioFileNotFound(String),
     UnsupportedAudioFormat(String),
     AudioDecodingError(String),
@@ -82,8 +83,12 @@ impl std::fmt::Display for ScxVoidError {
             ScxVoidError::AiRuleFileExists(path) => {
                 write!(f, "AI 规则文件已存在: {:?}", path)
             }
-            ScxVoidError::InvalidTemplateType(msg) => {
-                write!(f, "无效的模板类型: {}", msg)
+            ScxVoidError::UnknownStackType(id) => {
+                write!(
+                    f,
+                    "未知的技术栈类型 '{}'。可用类型：vue3, react, nextjs, node-cli, nestjs, tauri, java",
+                    id
+                )
             }
             ScxVoidError::AudioFileNotFound(msg) => {
                 write!(f, "音频文件未找到: {}", msg)
@@ -133,7 +138,11 @@ impl std::fmt::Display for ScxVoidError {
             ScxVoidError::UnsupportedImageFormat(msg) => {
                 write!(f, "不支持的图像格式: {}", msg)
             }
-            ScxVoidError::ImageConversionFailed { source, target, reason } => {
+            ScxVoidError::ImageConversionFailed {
+                source,
+                target,
+                reason,
+            } => {
                 write!(f, "从 {} 转换到 {} 失败: {}", source, target, reason)
             }
             ScxVoidError::ConverterNotFound { tool, hint } => {
