@@ -6,6 +6,10 @@
 
 ## 1. 核心原则
 
+0. **先了解项目再动手**
+   - 执行任务或修改代码之前，如果需要了解项目，必须先阅读 `.wiki/` 中的项目概述和文档结构
+   - 掌握项目的整体架构和设计原则后再开始工作，避免基于猜测的修改
+
 1. **保持现有功能完整性**
    - 除非用户明确要求，不得修改现有功能行为、配置、接口、环境变量结构、目录结构、脚手架流程
    - 保持项目原有的构建流程和运行方式
@@ -49,5 +53,38 @@
 - 删除现有功能
 - 擅自改变基础配置文件（如 tsconfig / vite / webpack / Cargo.toml / pom.xml）
 - 插入当前环境无法使用的 API（例如在浏览器项目引入 fs/path 等 node-only API）
+- **Superpowers spec/plan 文件错放**：spec 与 plan 文件只能存放在 `docs/superpowers/specs/` 和 `docs/superpowers/plans/` 下；禁止从 `.gitignore` 中删除 `docs/superpowers` 条目；禁止将 spec/plan 文件放到任何其他目录
+
+---
+
+## 5. 注释规范
+
+**示例（TypeScript）：**
+
+```typescript
+/**
+ * @description 从 Apifox 平台获取 OpenAPI 数据
+ * @param config API 配置对象
+ * @returns Promise<ApiData> API 数据
+ *
+ * @example const data = await fetchApifoxData({ source: '...', token: '...' });
+ *
+ */
+```
+
+**强制要求：**
+
+1. 每个文件必须有 `@description` 文件头注释（中文）
+2. 每个函数必须有 `@description` 注释
+3. 有参数的函数必须有 `@param` 注释
+4. 有返回值的函数必须有 `@returns` 注释
+5. 核心函数（命名策略、类型清理、生成器、解析器、转换器等）需要 `@example` 标签
+
+**语言差异说明：**
+
+- TypeScript / JavaScript：使用 JSDoc 风格（如上示例）
+- Java：使用 Javadoc 风格（`/** ... */`），遵循 Java 既有规范
+- Rust：使用 `///` 文档注释，遵循 rustdoc 规范（`# Arguments` / `# Returns` / `# Examples` 段）
+- 各语言按各自规范实现上述 5 条要求的内容，不强制使用完全相同的标签名
 
 ---
