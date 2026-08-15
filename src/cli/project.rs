@@ -28,7 +28,7 @@ pub enum ProjectCommands {
     },
     /// 生成或更新 AGENTS.md 文件
     AiRule {
-        /// 技术栈类型 (vue3/react/nextjs/node-cli/nestjs/tauri/java)
+        /// 技术栈类型 (vue3/react/nextjs/node-cli/nestjs/tauri/java/rust/python)
         #[arg(short, long)]
         r#type: Option<String>,
 
@@ -203,7 +203,7 @@ async fn manage_ai_rule(type_id: Option<String>, force: bool) {
             Some(pt) => pt,
             None => {
                 eprintln!(
-                    "错误：未知的技术栈类型 '{}'\n可用类型：vue3, react, nextjs, node-cli, nestjs, tauri, java",
+                    "错误：未知的技术栈类型 '{}'\n可用类型：vue3, react, nextjs, node-cli, nestjs, tauri, java, rust, python",
                     id
                 );
                 std::process::exit(1);
@@ -232,6 +232,8 @@ fn prompt_stack_selection() -> crate::services::project::git::types::ProjectType
         ("nestjs", "NestJS RESTful API"),
         ("tauri", "Tauri 桌面应用 (Rust + 前端)"),
         ("java", "Java (Maven/Gradle/Spring)"),
+        ("rust", "Rust (Cargo)"),
+        ("python", "Python (uv/poetry/pip)"),
     ];
     let items: Vec<String> = stacks
         .iter()

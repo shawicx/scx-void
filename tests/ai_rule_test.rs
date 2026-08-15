@@ -96,7 +96,7 @@ fn test_ai_rule_legacy_template_rejected() {
 #[test]
 fn test_ai_rule_all_stacks_generate() {
     let stacks = [
-        "vue3", "react", "nextjs", "node-cli", "nestjs", "tauri", "java",
+        "vue3", "react", "nextjs", "node-cli", "nestjs", "tauri", "java", "rust", "python",
     ];
 
     for stack in &stacks {

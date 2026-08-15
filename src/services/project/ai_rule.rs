@@ -26,6 +26,8 @@ impl AiRuleService {
             ProjectType::NestJs => include_str!("../../../assets/templates/ai_rule/nestjs.md"),
             ProjectType::Tauri => include_str!("../../../assets/templates/ai_rule/tauri.md"),
             ProjectType::Java => include_str!("../../../assets/templates/ai_rule/java.md"),
+            ProjectType::Rust => include_str!("../../../assets/templates/ai_rule/rust.md"),
+            ProjectType::Python => include_str!("../../../assets/templates/ai_rule/python.md"),
         };
         Ok(format!("{}\n\n---\n\n{}", base, stack))
     }
@@ -132,6 +134,8 @@ mod tests {
             ProjectType::NestJs,
             ProjectType::Tauri,
             ProjectType::Java,
+            ProjectType::Rust,
+            ProjectType::Python,
         ];
 
         for stack in stacks {
@@ -167,5 +171,13 @@ mod tests {
         // node-cli 必须提到 ESM
         let cli = service.render(ProjectType::NodeTsCli).unwrap();
         assert!(cli.contains("ESM"));
+
+        // Rust 必须提到 cargo
+        let rust = service.render(ProjectType::Rust).unwrap();
+        assert!(rust.contains("cargo"));
+
+        // Python 必须提到 pyproject.toml
+        let python = service.render(ProjectType::Python).unwrap();
+        assert!(python.contains("pyproject.toml"));
     }
 }

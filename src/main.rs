@@ -4,6 +4,7 @@ mod cli;
 mod errors;
 mod platform;
 mod services;
+mod tui;
 mod utils;
 
 #[derive(Parser)]
@@ -72,6 +73,8 @@ enum Commands {
         #[command(subcommand)]
         command: cli::AudioSubCommands,
     },
+    /// 进入交互式 TUI 界面
+    Tui,
 }
 
 #[tokio::main]
@@ -120,6 +123,12 @@ async fn main() {
         Commands::Audio { command } => {
             let audio_command = cli::AudioCommands { command };
             if let Err(e) = audio_command.run().await {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Tui => {
+            if let Err(e) = tui::run().await {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }

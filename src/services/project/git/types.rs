@@ -8,6 +8,8 @@ pub enum ProjectType {
     NextJs,
     Tauri,
     Java,
+    Rust,
+    Python,
 }
 
 #[allow(dead_code)]
@@ -22,6 +24,8 @@ impl ProjectType {
             ProjectType::NextJs => "NextJS".to_string(),
             ProjectType::Tauri => "Tauri".to_string(),
             ProjectType::Java => "Java".to_string(),
+            ProjectType::Rust => "Rust".to_string(),
+            ProjectType::Python => "Python".to_string(),
         }
     }
 
@@ -35,6 +39,8 @@ impl ProjectType {
             ProjectType::NextJs => "nextjs".to_string(),
             ProjectType::Tauri => "tauri".to_string(),
             ProjectType::Java => "java".to_string(),
+            ProjectType::Rust => "rust".to_string(),
+            ProjectType::Python => "python".to_string(),
         }
     }
 
@@ -50,6 +56,8 @@ impl ProjectType {
             ProjectType::NestJs => "nestjs",
             ProjectType::Tauri => "tauri",
             ProjectType::Java => "java",
+            ProjectType::Rust => "rust",
+            ProjectType::Python => "python",
         }
     }
 
@@ -63,6 +71,8 @@ impl ProjectType {
             "nestjs" => Some(Self::NestJs),
             "tauri" => Some(Self::Tauri),
             "java" => Some(Self::Java),
+            "rust" => Some(Self::Rust),
+            "python" => Some(Self::Python),
             _ => None,
         }
     }
@@ -183,12 +193,16 @@ mod tests {
     fn test_new_variants_identifier() {
         assert_eq!(ProjectType::Tauri.identifier(), "tauri");
         assert_eq!(ProjectType::Java.identifier(), "java");
+        assert_eq!(ProjectType::Rust.identifier(), "rust");
+        assert_eq!(ProjectType::Python.identifier(), "python");
     }
 
     #[test]
     fn test_new_variants_display_name() {
         assert_eq!(ProjectType::Tauri.display_name(), "Tauri");
         assert_eq!(ProjectType::Java.display_name(), "Java");
+        assert_eq!(ProjectType::Rust.display_name(), "Rust");
+        assert_eq!(ProjectType::Python.display_name(), "Python");
     }
 
     #[test]
@@ -200,6 +214,8 @@ mod tests {
         assert_eq!(ProjectType::NestJs.ai_rule_template_name(), "nestjs");
         assert_eq!(ProjectType::Tauri.ai_rule_template_name(), "tauri");
         assert_eq!(ProjectType::Java.ai_rule_template_name(), "java");
+        assert_eq!(ProjectType::Rust.ai_rule_template_name(), "rust");
+        assert_eq!(ProjectType::Python.ai_rule_template_name(), "python");
     }
 
     #[test]
@@ -231,6 +247,14 @@ mod tests {
         assert_eq!(
             ProjectType::from_ai_rule_id("java"),
             Some(ProjectType::Java)
+        );
+        assert_eq!(
+            ProjectType::from_ai_rule_id("rust"),
+            Some(ProjectType::Rust)
+        );
+        assert_eq!(
+            ProjectType::from_ai_rule_id("python"),
+            Some(ProjectType::Python)
         );
     }
 
