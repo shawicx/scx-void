@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 pub mod ai_rule;
+pub mod compress;
 pub mod convert;
+pub mod project_init;
 
 /// 命令所属分组（主菜单一级分区）
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -132,27 +134,45 @@ pub enum TaskOutcome {
     },
 }
 
-/// 任务运行上下文：进度上报 + 协作式取消
+/// 任务运行上下文：进度上报 + 协作式取消 + 异步 service 桥接
 ///
-/// 所有方法均可在阻塞线程调用（UnboundedSender::send 非阻塞）。
+/// log/progress/block_on 均可在阻塞线程调用（UnboundedSender::send 非阻塞）。
 #[derive(Clone)]
 pub struct TaskCtx {
     tx: tokio::sync::mpsc::UnboundedSender<RuntimeEvent>,
     cancel: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    runtime: Option<tokio::runtime::Handle>,
 }
 
 impl TaskCtx {
     pub(crate) fn new(
         tx: tokio::sync::mpsc::UnboundedSender<RuntimeEvent>,
         cancel: std::sync::Arc<std::sync::atomic::AtomicBool>,
+        runtime: Option<tokio::runtime::Handle>,
     ) -> Self {
-        Self { tx, cancel }
+        Self {
+            tx,
+            cancel,
+            runtime,
+        }
     }
 
     #[cfg(test)]
     pub(crate) fn for_test() -> Self {
         let (tx, _rx) = tokio::sync::mpsc::unbounded_channel();
-        Self::new(tx, std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)))
+        Self::new(
+            tx,
+            std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            tokio::runtime::Handle::try_current().ok(),
+        )
+    }
+
+    /// 在阻塞线程内执行异步 service 调用（如模板下载）
+    pub fn block_on<F: std::future::Future>(&self, fut: F) -> F::Output {
+        self.runtime
+            .as_ref()
+            .expect("TaskCtx 未持有 tokio 运行时句柄")
+            .block_on(fut)
     }
 
     pub fn log(&self, msg: impl Into<String>) {
@@ -216,6 +236,8 @@ impl ActionRegistry {
         let mut r = Self::new();
         r.register(Box::new(convert::ConvertAction));
         r.register(Box::new(ai_rule::AiRuleAction));
+        r.register(Box::new(compress::CompressAction));
+        r.register(Box::new(project_init::ProjectInitAction));
         r
     }
 }

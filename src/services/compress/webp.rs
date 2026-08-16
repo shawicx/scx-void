@@ -20,7 +20,8 @@ pub fn compress_to_webp(
     result
 }
 
-fn run_cwebp(input: &Path, output: &Path, quality: u8) -> Result<(), ScxVoidError> {
+/// 执行 cwebp 压缩（无进度展示，供 TUI 等自管进度的调用方使用）。
+pub(crate) fn run_cwebp(input: &Path, output: &Path, quality: u8) -> Result<(), ScxVoidError> {
     const TOOL: &str = "cwebp";
     ensure_tool(TOOL, &platform_hint())?;
 

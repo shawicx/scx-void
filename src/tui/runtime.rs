@@ -30,7 +30,11 @@ impl TaskHandle {
 pub fn spawn(task: Box<dyn TuiTask>) -> (TaskHandle, tokio::sync::mpsc::UnboundedReceiver<RuntimeEvent>) {
     let (tx, rx) = tokio::sync::mpsc::unbounded_channel();
     let cancel = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
-    let ctx = TaskCtx::new(tx.clone(), cancel.clone());
+    let ctx = TaskCtx::new(
+        tx.clone(),
+        cancel.clone(),
+        Some(tokio::runtime::Handle::current()),
+    );
     let forwarder = tx;
     tokio::spawn(async move {
         let result = tokio::task::spawn_blocking(move || task.run(ctx))

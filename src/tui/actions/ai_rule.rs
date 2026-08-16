@@ -128,11 +128,12 @@ mod tests {
     }
 
     #[test]
-    fn registry_defaults_contain_both_actions() {
+    fn registry_defaults_contain_all_actions() {
         let r = crate::tui::actions::ActionRegistry::with_defaults();
-        assert_eq!(r.list().len(), 2);
-        assert!(r.list().iter().any(|a| a.meta().id == "convert"));
-        assert!(r.list().iter().any(|a| a.meta().id == "ai-rule"));
+        assert_eq!(r.list().len(), 4);
+        for id in ["convert", "ai-rule", "compress", "project-init"] {
+            assert!(r.list().iter().any(|a| a.meta().id == id), "缺少 {}", id);
+        }
     }
 
     fn task(path: PathBuf, force: bool) -> Box<AiRuleTask> {

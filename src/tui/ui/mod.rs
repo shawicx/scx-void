@@ -120,6 +120,20 @@ mod tests {
     }
 
     #[test]
+    fn home_renders_all_default_actions_grouped() {
+        let app = App::new(crate::tui::actions::ActionRegistry::with_defaults());
+        let text = render(&app, 100, 24);
+        // 项目组在前，文件组在后，各 2 个命令
+        assert!(text.contains("项目"));
+        assert!(text.contains("初始化项目"));
+        assert!(text.contains("生成 AI 规则 (AGENTS.md)"));
+        assert!(text.contains("文件"));
+        assert!(text.contains("格式转换"));
+        assert!(text.contains("图片压缩 (WebP)"));
+        assert!(text.find("项目").unwrap() < text.find("初始化项目").unwrap());
+    }
+
+    #[test]
     fn home_shows_group_title_action_and_help() {
         let text = render(&app(), 80, 24);
         assert!(text.contains("scx-void"));
