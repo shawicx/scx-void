@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+pub mod ai_rule;
 pub mod convert;
 
 /// 命令所属分组（主菜单一级分区）
@@ -214,6 +215,7 @@ impl ActionRegistry {
     pub fn with_defaults() -> Self {
         let mut r = Self::new();
         r.register(Box::new(convert::ConvertAction));
+        r.register(Box::new(ai_rule::AiRuleAction));
         r
     }
 }
