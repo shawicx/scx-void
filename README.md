@@ -92,6 +92,9 @@ scx-void project ai-rule -t vue3 -f
 | `nestjs` | NestJS | NestJS RESTful API |
 | `tauri` | Tauri | Rust + 前端桌面应用 |
 | `java` | Java | Maven / Gradle / Spring |
+| `rust` | Rust | Rust (Cargo) |
+| `python` | Python | uv / poetry / pip |
+| `go-cli` | Go CLI | Go 语言 CLI（Go Modules + cobra/urfave-cli） |
 
 > 前端相关栈（vue3 / react / nextjs / node-cli / nestjs）统一要求 `pnpm` + Node 22+。
 >

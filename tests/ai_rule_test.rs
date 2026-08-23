@@ -35,6 +35,27 @@ fn test_ai_rule_vue3_generates_file() {
 }
 
 #[test]
+fn test_ai_rule_go_cli_generates_file() {
+    let tmp = make_tempdir();
+
+    let mut cmd = create_cmd();
+    cmd.current_dir(tmp.path());
+    cmd.args(["project", "ai-rule", "-t", "go-cli"]);
+    cmd.assert().success();
+
+    let agents = tmp.path().join("AGENTS.md");
+    assert!(agents.exists());
+
+    let content = fs::read_to_string(&agents).unwrap();
+    // base 段
+    assert!(content.contains("核心原则"));
+    // Go CLI 段
+    assert!(content.contains("Go CLI 项目规则"));
+    assert!(content.contains("go.mod"));
+    assert!(content.contains("go test ./..."));
+}
+
+#[test]
 fn test_ai_rule_unknown_stack_fails() {
     let tmp = make_tempdir();
 
@@ -97,6 +118,7 @@ fn test_ai_rule_legacy_template_rejected() {
 fn test_ai_rule_all_stacks_generate() {
     let stacks = [
         "vue3", "react", "nextjs", "node-cli", "nestjs", "tauri", "java", "rust", "python",
+        "go-cli",
     ];
 
     for stack in &stacks {

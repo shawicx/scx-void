@@ -28,6 +28,7 @@ impl AiRuleService {
             ProjectType::Java => include_str!("../../../assets/templates/ai_rule/java.md"),
             ProjectType::Rust => include_str!("../../../assets/templates/ai_rule/rust.md"),
             ProjectType::Python => include_str!("../../../assets/templates/ai_rule/python.md"),
+            ProjectType::GoCli => include_str!("../../../assets/templates/ai_rule/go-cli.md"),
         };
         Ok(format!("{}\n\n---\n\n{}", base, stack))
     }
@@ -136,6 +137,7 @@ mod tests {
             ProjectType::Java,
             ProjectType::Rust,
             ProjectType::Python,
+            ProjectType::GoCli,
         ];
 
         for stack in stacks {
@@ -179,5 +181,9 @@ mod tests {
         // Python 必须提到 pyproject.toml
         let python = service.render(ProjectType::Python).unwrap();
         assert!(python.contains("pyproject.toml"));
+
+        // Go CLI 必须提到 go.mod
+        let go_cli = service.render(ProjectType::GoCli).unwrap();
+        assert!(go_cli.contains("go.mod"));
     }
 }

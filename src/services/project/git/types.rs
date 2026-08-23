@@ -10,6 +10,7 @@ pub enum ProjectType {
     Java,
     Rust,
     Python,
+    GoCli,
 }
 
 #[allow(dead_code)]
@@ -26,6 +27,7 @@ impl ProjectType {
             ProjectType::Java => "Java".to_string(),
             ProjectType::Rust => "Rust".to_string(),
             ProjectType::Python => "Python".to_string(),
+            ProjectType::GoCli => "Go CLI".to_string(),
         }
     }
 
@@ -41,6 +43,7 @@ impl ProjectType {
             ProjectType::Java => "java".to_string(),
             ProjectType::Rust => "rust".to_string(),
             ProjectType::Python => "python".to_string(),
+            ProjectType::GoCli => "go-cli".to_string(),
         }
     }
 
@@ -58,6 +61,7 @@ impl ProjectType {
             ProjectType::Java => "java",
             ProjectType::Rust => "rust",
             ProjectType::Python => "python",
+            ProjectType::GoCli => "go-cli",
         }
     }
 
@@ -73,6 +77,7 @@ impl ProjectType {
             "java" => Some(Self::Java),
             "rust" => Some(Self::Rust),
             "python" => Some(Self::Python),
+            "go-cli" => Some(Self::GoCli),
             _ => None,
         }
     }
@@ -195,6 +200,7 @@ mod tests {
         assert_eq!(ProjectType::Java.identifier(), "java");
         assert_eq!(ProjectType::Rust.identifier(), "rust");
         assert_eq!(ProjectType::Python.identifier(), "python");
+        assert_eq!(ProjectType::GoCli.identifier(), "go-cli");
     }
 
     #[test]
@@ -203,6 +209,7 @@ mod tests {
         assert_eq!(ProjectType::Java.display_name(), "Java");
         assert_eq!(ProjectType::Rust.display_name(), "Rust");
         assert_eq!(ProjectType::Python.display_name(), "Python");
+        assert_eq!(ProjectType::GoCli.display_name(), "Go CLI");
     }
 
     #[test]
@@ -216,6 +223,7 @@ mod tests {
         assert_eq!(ProjectType::Java.ai_rule_template_name(), "java");
         assert_eq!(ProjectType::Rust.ai_rule_template_name(), "rust");
         assert_eq!(ProjectType::Python.ai_rule_template_name(), "python");
+        assert_eq!(ProjectType::GoCli.ai_rule_template_name(), "go-cli");
     }
 
     #[test]
@@ -255,6 +263,10 @@ mod tests {
         assert_eq!(
             ProjectType::from_ai_rule_id("python"),
             Some(ProjectType::Python)
+        );
+        assert_eq!(
+            ProjectType::from_ai_rule_id("go-cli"),
+            Some(ProjectType::GoCli)
         );
     }
 
