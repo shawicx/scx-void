@@ -63,6 +63,43 @@ pub enum ScxVoidError {
         tool: String,
         hint: String,
     },
+    /// release：无法识别目标项目类型
+    ReleaseProjectNotDetected(String),
+    /// release：版本号格式无效
+    InvalidVersion(String),
+    /// release：package.json 缺少 version 字段
+    VersionFieldMissing(std::path::PathBuf),
+    /// release：git tag 已存在
+    TagAlreadyExists(String),
+    /// release：当前目录不是 git 仓库
+    NotAGitRepository,
+    /// release：工作区存在未提交改动
+    DirtyWorktree(String),
+    /// release：package.json 标记为 private，无法发布 npm
+    PrivatePackage,
+    /// release：git 仓库未配置远程
+    GitRemoteMissing,
+    /// release：未安装发布所需工具
+    ReleaseToolNotFound {
+        tool: String,
+        hint: String,
+    },
+    /// release：git 命令执行失败
+    GitCommandFailed {
+        command: String,
+        reason: String,
+    },
+    /// release：发布步骤执行失败（含已完成步骤与手动补做提示）
+    ReleaseStepFailed {
+        step: String,
+        completed: Vec<String>,
+        reason: String,
+    },
+    /// release：package.json / tauri.conf.json / Cargo.toml 编辑失败
+    ManifestEditError {
+        path: String,
+        reason: String,
+    },
 }
 
 impl std::fmt::Display for ScxVoidError {
@@ -157,6 +194,50 @@ impl std::fmt::Display for ScxVoidError {
             ScxVoidError::CompressorNotFound { tool, hint } => {
                 write!(f, "未找到压缩工具 '{}': {}", tool, hint)
             }
+            ScxVoidError::ReleaseProjectNotDetected(msg) => {
+                write!(f, "无法识别项目类型: {}", msg)
+            }
+            ScxVoidError::InvalidVersion(v) => write!(f, "无效的版本号: {}", v),
+            ScxVoidError::VersionFieldMissing(path) => {
+                write!(f, "package.json 缺少 version 字段: {:?}", path)
+            }
+            ScxVoidError::TagAlreadyExists(tag) => write!(f, "git tag '{}' 已存在", tag),
+            ScxVoidError::NotAGitRepository => write!(f, "当前目录不是 git 仓库"),
+            ScxVoidError::DirtyWorktree(status) => {
+                write!(f, "工作区存在未提交改动，请先提交或暂存:\n{}", status)
+            }
+            ScxVoidError::PrivatePackage => {
+                write!(f, "package.json 中 private 为 true，无法发布到 npm")
+            }
+            ScxVoidError::GitRemoteMissing => {
+                write!(f, "git 仓库未配置远程 (remote)，无法推送")
+            }
+            ScxVoidError::ReleaseToolNotFound { tool, hint } => {
+                write!(f, "未找到发布所需工具 '{}': {}", tool, hint)
+            }
+            ScxVoidError::GitCommandFailed { command, reason } => {
+                write!(f, "命令 '{}' 执行失败: {}", command, reason)
+            }
+            ScxVoidError::ReleaseStepFailed {
+                step,
+                completed,
+                reason,
+            } => {
+                if completed.is_empty() {
+                    write!(f, "发布步骤 '{}' 失败: {}", step, reason)
+                } else {
+                    write!(
+                        f,
+                        "发布步骤 '{}' 失败: {}\n已完成步骤: {}\n可手动补做后续步骤",
+                        step,
+                        reason,
+                        completed.join(" -> ")
+                    )
+                }
+            }
+            ScxVoidError::ManifestEditError { path, reason } => {
+                write!(f, "文件 '{}' 编辑失败: {}", path, reason)
+            }
         }
     }
 }
@@ -172,5 +253,14 @@ impl From<reqwest::Error> for ScxVoidError {
 impl From<zip::result::ZipError> for ScxVoidError {
     fn from(err: zip::result::ZipError) -> Self {
         ScxVoidError::ArchiveExtractError(err.to_string())
+    }
+}
+
+impl From<serde_json::Error> for ScxVoidError {
+    fn from(err: serde_json::Error) -> Self {
+        ScxVoidError::ManifestEditError {
+            path: "JSON 解析".to_string(),
+            reason: err.to_string(),
+        }
     }
 }

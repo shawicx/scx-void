@@ -196,6 +196,48 @@ scx-void compress photo.jpg -q 75 --overwrite
 
 **依赖：** 需安装 libwebp（提供 `cwebp` 命令）：macOS `brew install webp`，Linux `sudo apt install webp`，Windows `winget install Google.WebP`。
 
+### `release` — 版本发布
+
+在目标项目目录执行，自动检测项目类型并完成版本发布（类似 standard-version）：
+
+- **Node.js CLI 项目**：更新 `package.json` 版本 → `git commit` → `git tag v{版本}` → 推送 → `npm publish`
+- **Tauri V2 项目**：同步更新 `package.json` / `src-tauri/tauri.conf.json` / `src-tauri/Cargo.toml` → `git commit` → `git tag v{版本}` → 推送
+
+```bash
+# 交互式选择递增类型（patch/minor/major，展示版本预览）
+scx-void release
+
+# 直接指定递增类型
+scx-void release --patch     # 1.2.3 → 1.2.4
+scx-void release --minor     # 1.2.3 → 1.3.0
+scx-void release --major     # 1.2.3 → 2.0.0
+
+# 演练模式：只打印将执行的步骤，不修改任何文件
+scx-void release --patch --dry-run
+
+# 强制指定项目类型（缺省自动检测）
+scx-void release --type tauri --patch
+
+# 跳过推送 / 跳过 npm 发布
+scx-void release --patch --no-push
+scx-void release --patch --no-publish
+```
+
+**参数：**
+
+| 参数 | 缩写 | 说明 |
+|------|------|------|
+| `--patch` / `--minor` / `--major` | - | 版本递增类型（三选一，缺省交互选择） |
+| `--type` | `-t` | 项目类型 `node` / `tauri`（缺省自动检测） |
+| `--dry-run` | - | 演练模式，不实际执行 |
+| `--yes` | `-y` | 跳过发布确认 |
+| `--no-push` | - | 跳过 git push |
+| `--no-publish` | - | 跳过 npm publish |
+
+**前置条件：** 当前目录为 git 仓库、工作区干净、目标 tag（`v{新版本}`）不存在；Node 项目要求非 `private` 且已安装 npm。发布失败时会列出已完成步骤与手动补做命令，不会自动回滚。
+
+> Tauri 项目中 `tauri.conf.json` 的 `version` 若为 `"../package.json"` 引用形式则自动跳过（以 `package.json` 为版本源）；`src-tauri/Cargo.lock` 不会更新，下次构建时自动同步。
+
 ### `audio` — 音频转录（需启用 audio feature）
 
 ```bash

@@ -8,7 +8,7 @@ mod utils;
 
 #[derive(Parser)]
 #[command(name = "scx-void")]
-#[command(version = "0.1.0")]
+#[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(about = "用于项目管理和系统操作的多功能命令行工具", long_about = None)]
 struct Cli {
     #[command(subcommand)]
@@ -66,6 +66,11 @@ enum Commands {
         #[arg(long)]
         overwrite: bool,
     },
+    /// 版本发布：Node.js CLI 项目发布 npm；Tauri V2 项目打 tag 推送
+    Release {
+        #[command(flatten)]
+        args: cli::ReleaseArgs,
+    },
     #[cfg(feature = "audio")]
     /// 音频转录相关命令
     Audio {
@@ -112,6 +117,12 @@ async fn main() {
             overwrite,
         } => {
             if let Err(e) = cli::run_compress(file, quality, output, overwrite).await {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Release { args } => {
+            if let Err(e) = cli::run_release(args).await {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }
