@@ -171,6 +171,65 @@ fn test_release_tauri_type_requires_src_tauri_files() {
 }
 
 #[test]
+fn test_release_publish_and_no_publish_are_mutually_exclusive() {
+    let tmp = make_node_repo();
+
+    let output = create_cmd()
+        .current_dir(tmp.path())
+        .args(["release", "--patch", "--dry-run", "--publish", "--no-publish"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("--publish"));
+}
+
+#[test]
+fn test_release_no_publish_skips_npm_publish_step() {
+    let tmp = make_node_repo();
+
+    let output = create_cmd()
+        .current_dir(tmp.path())
+        .args(["release", "--patch", "--dry-run", "--no-publish"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    assert!(!stdout.contains("npm publish"), "应无 npm publish 步骤:\n{}", stdout);
+    assert!(stdout.contains("git tag v0.1.1"));
+}
+
+#[test]
+fn test_release_private_package_allowed_when_no_publish() {
+    let tmp = TempDir::new().unwrap();
+    fs::write(
+        tmp.path().join("package.json"),
+        "{\n  \"name\": \"demo\",\n  \"version\": \"1.0.0\",\n  \"private\": true\n}\n",
+    )
+    .unwrap();
+    run_git(tmp.path(), &["init"]);
+    run_git(tmp.path(), &["add", "."]);
+    run_git(tmp.path(), &["commit", "-m", "init"]);
+
+    // private:true 且不发布 npm（CI 发布场景）→ 放行
+    let output = create_cmd()
+        .current_dir(tmp.path())
+        .args(["release", "--patch", "--dry-run", "--no-publish", "--no-push"])
+        .output()
+        .unwrap();
+    assert!(output.status.success());
+    assert!(String::from_utf8_lossy(&output.stdout).contains("1.0.0 → 1.0.1"));
+
+    // private:true 且要发布（dry-run 默认走发布分支）→ 仍拦截
+    let output = create_cmd()
+        .current_dir(tmp.path())
+        .args(["release", "--patch", "--dry-run"])
+        .output()
+        .unwrap();
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("private"));
+}
+
+#[test]
 fn test_release_tauri_dry_run_syncs_three_files_plan() {
     let tmp = make_node_repo();
     let src_tauri = tmp.path().join("src-tauri");

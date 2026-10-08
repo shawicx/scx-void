@@ -34,8 +34,12 @@ pub struct ReleaseArgs {
     #[arg(long)]
     pub no_push: bool,
 
-    /// 跳过 npm publish
-    #[arg(long)]
+    /// 发布到 npm
+    #[arg(long, group = "npm_publish")]
+    pub publish: bool,
+
+    /// 跳过 npm publish（如由 GitHub CI 完成发布）
+    #[arg(long, group = "npm_publish")]
     pub no_publish: bool,
 }
 
@@ -63,11 +67,30 @@ pub async fn run_release(args: ReleaseArgs) -> Result<(), ScxVoidError> {
     let new = release::version::bump(&current, bump_kind);
     println!("目标版本: {} → {}", current, new);
 
+    let no_publish = if args.publish {
+        false
+    } else if args.no_publish {
+        true
+    } else if kind == ProjectKind::Node {
+        // 未显式指定时交互询问；--yes / --dry-run 跳过询问并保持默认发布
+        if args.yes || args.dry_run {
+            false
+        } else {
+            !Confirm::new()
+                .with_prompt("是否发布到 npm？（发布已由 GitHub CI 完成时选否）")
+                .default(true)
+                .interact()
+                .map_err(|e| ScxVoidError::GeneralError(e.to_string()))?
+        }
+    } else {
+        true
+    };
+
     let ctx = ReleaseContext {
         new_version: new.to_string(),
         dry_run: args.dry_run,
         no_push: args.no_push,
-        no_publish: args.no_publish,
+        no_publish,
     };
     let steps = match kind {
         ProjectKind::Node => release::node::plan(&cwd, &ctx)?,

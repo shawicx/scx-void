@@ -230,11 +230,14 @@ scx-void release --patch --no-publish
 | `--patch` / `--minor` / `--major` | - | 版本递增类型（三选一，缺省交互选择） |
 | `--type` | `-t` | 项目类型 `node` / `tauri`（缺省自动检测） |
 | `--dry-run` | - | 演练模式，不实际执行 |
-| `--yes` | `-y` | 跳过发布确认 |
+| `--yes` | `-y` | 跳过发布确认（npm 发布询问也按默认"发布"处理） |
 | `--no-push` | - | 跳过 git push |
-| `--no-publish` | - | 跳过 npm publish |
+| `--publish` | - | 发布到 npm（与 `--no-publish` 互斥） |
+| `--no-publish` | - | 跳过 npm publish（发布由 GitHub CI 完成的项目用） |
 
-**前置条件：** 当前目录为 git 仓库、工作区干净、目标 tag（`v{新版本}`）不存在；Node 项目要求非 `private` 且已安装 npm。发布失败时会列出已完成步骤与手动补做命令，不会自动回滚。
+> Node 项目未指定 `--publish` / `--no-publish` 时会交互询问"是否发布到 npm"；Tauri 项目不涉及 npm 发布。
+
+**前置条件：** 当前目录为 git 仓库、工作区干净、目标 tag（`v{新版本}`）不存在；本地执行 npm publish 时要求非 `private` 且已安装 npm（走 CI 发布的 `--no-publish` 项目不受此限制）。发布失败时会列出已完成步骤与手动补做命令，不会自动回滚。
 
 > Tauri 项目中 `tauri.conf.json` 的 `version` 若为 `"../package.json"` 引用形式则自动跳过（以 `package.json` 为版本源）；`src-tauri/Cargo.lock` 不会更新，下次构建时自动同步。
 

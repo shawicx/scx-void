@@ -22,11 +22,15 @@ pub fn plan(cwd: &Path, ctx: &ReleaseContext) -> Result<Vec<ReleaseStep>, ScxVoi
     if !ctx.dry_run && !ctx.no_push && !git::has_remote(cwd)? {
         return Err(ScxVoidError::GitRemoteMissing);
     }
-    if version::package_is_private(cwd) {
-        return Err(ScxVoidError::PrivatePackage);
-    }
-    if !ctx.dry_run && !ctx.no_publish {
-        check_npm()?;
+    if !ctx.no_publish {
+        // 仅在本地执行 npm publish 时才需要这些检查；
+        // 走 GitHub CI 发布的项目可能 private:true 或无本地 npm
+        if version::package_is_private(cwd) {
+            return Err(ScxVoidError::PrivatePackage);
+        }
+        if !ctx.dry_run {
+            check_npm()?;
+        }
     }
 
     let branch = git::current_branch(cwd)?;
