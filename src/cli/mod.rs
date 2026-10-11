@@ -1,5 +1,6 @@
 #[cfg(feature = "audio")]
 pub mod audio;
+pub mod changelog;
 pub mod compress;
 pub mod convert;
 pub mod project;
@@ -10,6 +11,7 @@ pub mod utils;
 
 #[cfg(feature = "audio")]
 pub use audio::*;
+pub use changelog::*;
 pub use compress::*;
 pub use convert::*;
 pub use project::*;

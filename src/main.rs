@@ -71,6 +71,11 @@ enum Commands {
         #[command(flatten)]
         args: cli::ReleaseArgs,
     },
+    /// 生成/更新 CHANGELOG：按版本 tag 切割提交记录，新版本在前
+    Changelog {
+        #[command(subcommand)]
+        command: cli::ChangelogSubCommands,
+    },
     #[cfg(feature = "audio")]
     /// 音频转录相关命令
     Audio {
@@ -123,6 +128,12 @@ async fn main() {
         }
         Commands::Release { args } => {
             if let Err(e) = cli::run_release(args).await {
+                eprintln!("Error: {}", e);
+                std::process::exit(1);
+            }
+        }
+        Commands::Changelog { command } => {
+            if let Err(e) = cli::run_changelog(command).await {
                 eprintln!("Error: {}", e);
                 std::process::exit(1);
             }

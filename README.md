@@ -241,6 +241,37 @@ scx-void release --patch --no-publish
 
 > Tauri 项目中 `tauri.conf.json` 的 `version` 若为 `"../package.json"` 引用形式则自动跳过（以 `package.json` 为版本源）；`src-tauri/Cargo.lock` 不会更新，下次构建时自动同步。
 
+### `changelog` — 生成 / 更新 CHANGELOG
+
+按版本 tag（semver，支持 `v` 前缀）切割 git 提交记录，生成 Keep a Changelog 风格的 `CHANGELOG.md`，**最新版本在前**。提交按 Conventional Commits 规范自动分组（`feat` → Features、`fix` → Bug Fixes 等），无法识别的提交归入 Other Changes；`!` 或 `BREAKING CHANGE` 标记的提交会前置到 ⚠ BREAKING CHANGES。
+
+```bash
+# 首次生成：遍历所有 tag，输出完整 CHANGELOG.md
+scx-void changelog init
+
+# 已存在时重新生成
+scx-void changelog init --force
+
+# 增量更新：新发布的 tag 归档为版本段落，未发布提交合并进 Unreleased（幂等，可重复执行）
+scx-void changelog update
+
+# 演练模式：打印将生成的内容，不实际写入
+scx-void changelog init --dry-run
+scx-void changelog update --dry-run
+
+# 指定输出文件
+scx-void changelog init -o docs/CHANGELOG.md
+```
+
+| 子命令 | 参数 | 缩写 | 说明 |
+|---|---|---|---|
+| `init` | `--file` | `-o` | 输出文件路径（默认 `CHANGELOG.md`） |
+| `init` | `--force` | `-f` | 已存在时强制重新生成 |
+| `init` / `update` | `--dry-run` | - | 演练模式，不实际写入 |
+| `update` | `--file` | `-o` | 输出文件路径（默认 `CHANGELOG.md`） |
+
+**说明：** `update` 幂等——无新提交 / 新 tag 时不会修改文件；Unreleased 中已有条目按短哈希去重，手工编写的条目会原样保留。解析不出 semver 的 tag（如 `nightly`）不参与版本分割。文件不存在时 `update` 等价于 `init`。
+
 ### `audio` — 音频转录（需启用 audio feature）
 
 ```bash
